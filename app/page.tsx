@@ -119,7 +119,7 @@ export default function Home() {
         <div className="workList">
           {selectedWork.map((work) => (
             <a
-              className="workItem reveal magnetic"
+              className="workItem reveal"
               href={work.url}
               key={work.title}
               target="_blank"

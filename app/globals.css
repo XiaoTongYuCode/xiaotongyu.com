@@ -383,61 +383,72 @@ section {
 }
 
 .work {
-  padding: 92px 0 112px;
-  border-top: 1px solid rgba(17, 17, 17, 0.1);
+  padding: 84px 0 104px;
+  border-top: 1px solid rgba(17, 17, 17, 0.08);
 }
 
 .workHeader {
   display: grid;
   grid-template-columns: 220px minmax(0, 1fr);
   gap: 80px;
-  align-items: end;
+  align-items: baseline;
+}
+
+.workHeader h2 {
+  font-size: clamp(28px, 3.4vw, 44px);
+  letter-spacing: -0.035em;
+  line-height: 1;
 }
 
 .workList {
   display: grid;
-  margin-top: 54px;
-  border-top: 1px solid rgba(17, 17, 17, 0.12);
+  gap: 8px;
+  margin-top: 42px;
 }
 
 .workItem {
   display: grid;
-  grid-template-columns: 80px minmax(0, 1fr) 360px;
-  gap: 24px;
+  grid-template-columns: 58px minmax(0, 1fr) minmax(210px, 340px);
+  gap: 22px;
   align-items: center;
-  min-height: 104px;
-  border-bottom: 1px solid rgba(17, 17, 17, 0.12);
+  min-height: 78px;
+  padding: 0 18px;
+  border: 1px solid rgba(17, 17, 17, 0.08);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.22);
   transition:
     background 220ms ease,
-    padding 220ms ease,
+    border-color 220ms ease,
     transform 220ms ease;
 }
 
 .workItem:hover {
-  padding: 0 20px;
-  background: rgba(17, 17, 17, 0.035);
+  border-color: rgba(17, 17, 17, 0.16);
+  background: rgba(255, 255, 255, 0.56);
+  transform: translateY(-1px);
 }
 
 .workItem span {
   color: rgba(17, 17, 17, 0.38);
   font-family:
     "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 800;
 }
 
 .workItem h3 {
   margin: 0;
-  font-size: clamp(22px, 2.35vw, 34px);
+  font-size: clamp(18px, 1.8vw, 24px);
   font-weight: 800;
-  letter-spacing: -0.035em;
+  letter-spacing: -0.025em;
 }
 
 .workItem p {
   margin: 0;
-  color: rgba(17, 17, 17, 0.52);
-  font-size: 13px;
+  color: rgba(17, 17, 17, 0.48);
+  font-size: 12px;
   font-weight: 700;
+  line-height: 1.35;
   text-align: right;
 }
 
@@ -573,7 +584,9 @@ section {
   }
 
   .workItem {
-    grid-template-columns: 52px minmax(0, 1fr);
+    grid-template-columns: 40px minmax(0, 1fr);
+    min-height: 88px;
+    padding: 14px 16px;
   }
 
   .workItem p {
