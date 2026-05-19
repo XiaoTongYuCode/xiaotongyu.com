@@ -16,5 +16,5 @@ pnpm-debug.log*
 *-preview.png
 portfolio-preview.png
 /xtyopen-*.png
-xtyopen-logo.svg
+/xtyopen-logo.svg
 .vercel
