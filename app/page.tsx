@@ -3,16 +3,19 @@ import InteractiveLayer from "./components/InteractiveLayer";
 const capabilities = [
   {
     title: "Product Systems",
+    accent: "systems",
     description:
       "I help shape early ideas into practical interfaces, with attention to structure, interaction, and maintainable implementation.",
   },
   {
     title: "AI Applications",
+    accent: "ai",
     description:
       "I work on AI-assisted workflows that connect models, retrieval, tools, and review into systems people can actually use.",
   },
   {
     title: "Creative Engineering",
+    accent: "creative",
     description:
       "I enjoy small details in motion, canvas, data visualization, and frontend craft when they make a product clearer.",
   },
@@ -103,18 +106,32 @@ export default function Home() {
 
       <section id="studio" className="capabilities sectionWrap">
         {capabilities.map((item) => (
-          <article className="capabilityCard reveal" key={item.title}>
-            <span />
-            <h3>{item.title}</h3>
-            <p>{item.description}</p>
+          <article
+            className={`capabilityCard capabilityCard--${item.accent} reveal`}
+            key={item.title}
+          >
+            <div className="capabilityIcon" aria-hidden="true">
+              <span className="capabilityIconDot" />
+              <span className="capabilityIconDot" />
+            </div>
+            <div className="capabilityContent">
+              <h3>{item.title}</h3>
+              <p>{item.description}</p>
+            </div>
           </article>
         ))}
       </section>
 
       <section id="work" className="work sectionWrap">
         <div className="workHeader reveal">
-          <p className="sectionLabel">Selected Work</p>
-          <h2>Recent directions</h2>
+          <div className="workHeaderLabel">
+            <p className="sectionLabel">Selected Work</p>
+          </div>
+          <h2>
+            <span>Recent</span>
+            {" "}
+            <span>directions</span>
+          </h2>
         </div>
         <div className="workList">
           {selectedWork.map((work) => (
@@ -151,6 +168,7 @@ export default function Home() {
         <a className="contactLink magnetic" href="mailto:work@xiaotongyu.com">
           work@xiaotongyu.com
         </a>
+        <span className="emailClickStatus" role="status" aria-live="polite" />
       </section>
 
       <footer className="footer">

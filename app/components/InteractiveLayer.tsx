@@ -251,10 +251,139 @@ export default function InteractiveLayer() {
       target.style.transform = "";
     };
 
+    const emailResetTimers = new WeakMap<HTMLAnchorElement, number>();
+    const activeEmailLinks = new Set<HTMLAnchorElement>();
+
+    const getEmailStatusElement = (target: HTMLAnchorElement) => {
+      const statusElement = target.nextElementSibling;
+      if (
+        statusElement instanceof HTMLElement &&
+        statusElement.classList.contains("emailClickStatus")
+      ) {
+        return statusElement;
+      }
+
+      return null;
+    };
+
+    const onContactEmailClick = (event: MouseEvent) => {
+      const target = (event.target as Element | null)?.closest<HTMLAnchorElement>(
+        "a.contactLink[href^='mailto:']",
+      );
+
+      if (!target) {
+        return;
+      }
+
+      const statusElement = getEmailStatusElement(target);
+      const email = target.href.replace(/^mailto:/, "").split("?")[0];
+
+      event.preventDefault();
+      activeEmailLinks.add(target);
+
+      const existingResetTimer = emailResetTimers.get(target);
+      if (existingResetTimer) {
+        window.clearTimeout(existingResetTimer);
+      }
+
+      if (statusElement) {
+        statusElement.textContent = "Copying email";
+      }
+
+      if (navigator.clipboard?.writeText) {
+        void navigator.clipboard
+          .writeText(email)
+          .then(() => {
+            if (statusElement) {
+              statusElement.textContent = "Email copied";
+            }
+          })
+          .catch(() => {
+            if (statusElement) {
+              statusElement.textContent = "Copy unavailable";
+            }
+          });
+      } else if (statusElement) {
+        statusElement.textContent = "Copy unavailable";
+      }
+
+      if (statusElement) {
+        const resetTimer = window.setTimeout(() => {
+          if (statusElement) {
+            statusElement.textContent = "";
+          }
+        }, 2200);
+        emailResetTimers.set(target, resetTimer);
+      }
+    };
+
+    const capabilitySettleTimers = new WeakMap<HTMLElement, number>();
+
+    const onCapabilityMove = (event: Event) => {
+      const target = event.currentTarget as HTMLElement;
+      const pointerEvent = event as PointerEvent;
+      const rect = target.getBoundingClientRect();
+      const x = pointerEvent.clientX - rect.left;
+      const y = pointerEvent.clientY - rect.top;
+      const tiltX = (y / rect.height - 0.5) * -5;
+      const tiltY = (x / rect.width - 0.5) * 5;
+      const settleTimer = capabilitySettleTimers.get(target);
+
+      if (settleTimer) {
+        window.clearTimeout(settleTimer);
+        capabilitySettleTimers.delete(target);
+      }
+
+      target.classList.remove("isPointerSettling");
+      target.classList.add("isPointerActive");
+      target.querySelectorAll<HTMLElement>(".capabilityIconDot").forEach((dot) => {
+        dot.style.transform = "";
+      });
+      target.style.setProperty("--card-x", `${x}px`);
+      target.style.setProperty("--card-y", `${y}px`);
+      target.style.setProperty("--card-tilt-x", `${tiltX.toFixed(2)}deg`);
+      target.style.setProperty("--card-tilt-y", `${tiltY.toFixed(2)}deg`);
+    };
+
+    const onCapabilityLeave = (event: Event) => {
+      const target = event.currentTarget as HTMLElement;
+      const dots = target.querySelectorAll<HTMLElement>(".capabilityIconDot");
+
+      dots.forEach((dot) => {
+        const transform = window.getComputedStyle(dot).transform;
+        dot.style.transform = transform === "none" ? "" : transform;
+      });
+
+      target.classList.remove("isPointerActive");
+      target.classList.add("isPointerSettling");
+      target.style.setProperty("--card-x", "28px");
+      target.style.setProperty("--card-y", "28px");
+      target.style.setProperty("--card-tilt-x", "0deg");
+      target.style.setProperty("--card-tilt-y", "0deg");
+
+      window.requestAnimationFrame(() => {
+        dots.forEach((dot) => {
+          dot.style.transform = "";
+        });
+      });
+
+      const settleTimer = window.setTimeout(() => {
+        target.classList.remove("isPointerSettling");
+        capabilitySettleTimers.delete(target);
+      }, 560);
+      capabilitySettleTimers.set(target, settleTimer);
+    };
+
     const magneticElements = document.querySelectorAll<HTMLElement>(".magnetic");
     magneticElements.forEach((element) => {
       element.addEventListener("pointermove", onMagneticMove);
       element.addEventListener("pointerleave", onMagneticLeave);
+    });
+    document.addEventListener("click", onContactEmailClick);
+    const capabilityCards = document.querySelectorAll<HTMLElement>(".capabilityCard");
+    capabilityCards.forEach((element) => {
+      element.addEventListener("pointermove", onCapabilityMove);
+      element.addEventListener("pointerleave", onCapabilityLeave);
     });
 
     resize();
@@ -275,6 +404,21 @@ export default function InteractiveLayer() {
       magneticElements.forEach((element) => {
         element.removeEventListener("pointermove", onMagneticMove);
         element.removeEventListener("pointerleave", onMagneticLeave);
+      });
+      document.removeEventListener("click", onContactEmailClick);
+      activeEmailLinks.forEach((element) => {
+        const resetTimer = emailResetTimers.get(element);
+        if (resetTimer) {
+          window.clearTimeout(resetTimer);
+        }
+      });
+      capabilityCards.forEach((element) => {
+        const settleTimer = capabilitySettleTimers.get(element);
+        if (settleTimer) {
+          window.clearTimeout(settleTimer);
+        }
+        element.removeEventListener("pointermove", onCapabilityMove);
+        element.removeEventListener("pointerleave", onCapabilityLeave);
       });
     };
   }, []);
