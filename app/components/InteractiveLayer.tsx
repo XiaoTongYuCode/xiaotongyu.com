@@ -356,8 +356,6 @@ export default function InteractiveLayer() {
 
       target.classList.remove("isPointerActive");
       target.classList.add("isPointerSettling");
-      target.style.setProperty("--card-x", "28px");
-      target.style.setProperty("--card-y", "28px");
       target.style.setProperty("--card-tilt-x", "0deg");
       target.style.setProperty("--card-tilt-y", "0deg");
 
@@ -368,6 +366,8 @@ export default function InteractiveLayer() {
       });
 
       const settleTimer = window.setTimeout(() => {
+        target.style.setProperty("--card-x", "28px");
+        target.style.setProperty("--card-y", "28px");
         target.classList.remove("isPointerSettling");
         capabilitySettleTimers.delete(target);
       }, 560);
