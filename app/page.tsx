@@ -1,4 +1,5 @@
 import InteractiveLayer from "./components/InteractiveLayer";
+import LoadingGate from "./components/LoadingGate";
 
 const capabilities = [
   {
@@ -26,7 +27,7 @@ const selectedWork = [
     index: "01",
     title: "Myrisle iOS App",
     type: "Local AI diary / iOS / Privacy-first",
-    url: "https://apps.apple.com/us/app/%E7%A7%81%E5%B1%BF/id6759214981?l=zh-Hans-CN",
+    url: "https://apps.apple.com/us/app/%E7%A7%81%E5%B1%BF/id6759214981",
   },
   {
     index: "02",
@@ -46,6 +47,9 @@ export default function Home() {
   return (
     <main>
       <InteractiveLayer />
+      <LoadingGate />
+      <div className="motionLoader" aria-hidden="true" />
+      <div className="scrollProgress" aria-hidden="true" />
 
       <header className="siteHeader">
         <a className="brand" href="#top" aria-label="xtyopen home">
@@ -64,7 +68,7 @@ export default function Home() {
 
       <section id="top" className="hero">
         <div className="heroCanvasMask" aria-hidden="true" />
-        <div className="heroInner reveal isRevealed">
+        <div className="heroInner reveal">
           <p className="kicker">Software Engineer</p>
           <h1>
             Building useful products, AI tools, and web experiences.
@@ -82,7 +86,7 @@ export default function Home() {
             </a>
           </div>
         </div>
-        <div className="heroMeta reveal isRevealed">
+        <div className="heroMeta reveal">
           <span>Based in Shanghai</span>
           <span>Product Engineering</span>
           <span>AI Experience Design</span>

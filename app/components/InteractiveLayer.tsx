@@ -22,6 +22,15 @@ type RiverDot = {
   cluster: number;
 };
 
+type LightningNode = { kind: "dot"; dot: Dot } | { kind: "pointer" };
+
+type LightningPath = {
+  nodes: LightningNode[];
+  createdAt: number;
+  drawDuration: number;
+  expiresAt: number;
+};
+
 export default function InteractiveLayer() {
   const backgroundCanvasRef = useRef<HTMLCanvasElement>(null);
   const riverCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -47,10 +56,16 @@ export default function InteractiveLayer() {
     let width = 0;
     let height = 0;
     let animationFrame = 0;
-    let scrollProgress = 0;
+    let targetScrollProgress = 0;
+    let easedScrollProgress = 0;
+    let pointerVisible = false;
+    let lightningPaths: LightningPath[] = [];
+    let nextLightningAt = 0;
     const pointer = { x: -1000, y: -1000, tx: -1000, ty: -1000 };
     const dots: Dot[] = [];
     const riverDots: RiverDot[] = [];
+    const pointerInfluenceRadius = 180;
+    const maxLightningSegmentLength = 100;
 
     const getRiverBaseY = (x: number) =>
       height * 0.5 - (x / Math.max(1, width) - 0.5) * height * 0.32;
@@ -63,7 +78,7 @@ export default function InteractiveLayer() {
 
     const buildDots = () => {
       dots.length = 0;
-      const gap = Math.max(28, Math.min(44, width / 34));
+      const gap = Math.max(22, Math.min(34, width / 42));
       const cols = Math.ceil(width / gap) + 2;
       const rows = Math.ceil(height / gap) + 8;
 
@@ -128,26 +143,197 @@ export default function InteractiveLayer() {
     const onPointerMove = (event: PointerEvent) => {
       pointer.tx = event.clientX;
       pointer.ty = event.clientY;
+      pointerVisible = true;
       cursor.classList.add("isVisible");
       cursorDot.classList.add("isVisible");
     };
 
     const onPointerLeave = () => {
+      pointerVisible = false;
+      lightningPaths = [];
       cursor.classList.remove("isVisible");
       cursorDot.classList.remove("isVisible");
     };
 
     const onScroll = () => {
       const maxScroll = Math.max(1, document.body.scrollHeight - window.innerHeight);
-      scrollProgress = window.scrollY / maxScroll;
+      targetScrollProgress = Math.min(1, Math.max(0, window.scrollY / maxScroll));
       document.documentElement.style.setProperty(
         "--scroll-progress",
-        scrollProgress.toFixed(4),
+        targetScrollProgress.toFixed(4),
       );
+    };
+
+    const getLightningNodePoint = (node: LightningNode) => {
+      if (node.kind === "pointer") {
+        return { x: pointer.tx, y: pointer.ty };
+      }
+
+      return { x: node.dot.x, y: node.dot.y };
+    };
+
+    const buildLightningPath = (time: number) => {
+      const candidates = dots.filter((dot) => {
+        const dx = dot.x - pointer.tx;
+        const dy = dot.y - pointer.ty;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        return (
+          dot.x > -24 &&
+          dot.x < width + 24 &&
+          dot.y > -24 &&
+          dot.y < height + 24 &&
+          distance > 36 &&
+          distance <= pointerInfluenceRadius
+        );
+      });
+
+      if (candidates.length < 4) {
+        return null;
+      }
+
+      const pickNearbyDot = (origin: { x: number; y: number }, usedDots: Set<Dot>) => {
+        const nearbyDots = candidates
+          .filter((dot) => !usedDots.has(dot))
+          .map((dot) => ({
+            dot,
+            distance: Math.hypot(dot.x - origin.x, dot.y - origin.y),
+          }))
+          .sort((left, right) => left.distance - right.distance)
+          .slice(0, 3 + Math.floor(Math.random() * 3));
+
+        if (nearbyDots.length === 0) {
+          return null;
+        }
+
+        return nearbyDots[Math.floor(Math.random() * nearbyDots.length)].dot;
+      };
+
+      const segmentCount = 3 + Math.floor(Math.random() * 3);
+      const outwardNodes: LightningNode[] = [{ kind: "pointer" }];
+      const usedDots = new Set<Dot>();
+
+      for (let index = 0; index < segmentCount; index += 1) {
+        const origin = getLightningNodePoint(outwardNodes[outwardNodes.length - 1]);
+        const dot = pickNearbyDot(origin, usedDots);
+        if (!dot) {
+          return null;
+        }
+
+        usedDots.add(dot);
+        outwardNodes.push({ kind: "dot", dot });
+      }
+
+      return {
+        nodes: [...outwardNodes].reverse(),
+        createdAt: time,
+        drawDuration: 680 + Math.random() * 260,
+        expiresAt: time + 1480 + Math.random() * 520,
+      };
+    };
+
+    const drawLightningPaths = (time: number) => {
+      if (!pointerVisible) {
+        lightningPaths = [];
+        return;
+      }
+
+      lightningPaths = lightningPaths.filter((path) => time <= path.expiresAt);
+
+      if (lightningPaths.length < 3 && time >= nextLightningAt) {
+        const nextPath = buildLightningPath(time);
+        if (nextPath) {
+          lightningPaths.push(nextPath);
+        }
+        nextLightningAt = time + 720 + Math.random() * 520;
+      }
+
+      lightningPaths.forEach((currentPath) => {
+        const life = currentPath.expiresAt - currentPath.createdAt;
+        const age = time - currentPath.createdAt;
+        const drawProgress = Math.min(1, age / currentPath.drawDuration);
+        const fadeDuration = Math.max(1, life - currentPath.drawDuration);
+        const fadeProgress = Math.max(0, (age - currentPath.drawDuration) / fadeDuration);
+        const opacity = Math.min(1, age / 140) * Math.max(0, 1 - fadeProgress);
+        const currentPoints = currentPath.nodes.map(getLightningNodePoint);
+        const constrainedPoints = [currentPoints[0]];
+        for (let index = 1; index < currentPoints.length; index += 1) {
+          const previous = constrainedPoints[constrainedPoints.length - 1];
+          const target = currentPoints[index];
+          const dx = target.x - previous.x;
+          const dy = target.y - previous.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+
+          if (distance > maxLightningSegmentLength) {
+            const progress = maxLightningSegmentLength / distance;
+            constrainedPoints.push({
+              x: previous.x + dx * progress,
+              y: previous.y + dy * progress,
+            });
+            break;
+          }
+
+          constrainedPoints.push(target);
+        }
+
+        const segmentLengths = constrainedPoints.slice(1).map((point, index) => {
+          const previous = constrainedPoints[index];
+          const dx = point.x - previous.x;
+          const dy = point.y - previous.y;
+
+          return Math.sqrt(dx * dx + dy * dy);
+        });
+        const totalLength = segmentLengths.reduce((sum, length) => sum + length, 0);
+
+        if (totalLength <= 0) {
+          return;
+        }
+
+        let remainingLength = totalLength * drawProgress;
+
+        backgroundCtx.save();
+        backgroundCtx.lineCap = "round";
+        backgroundCtx.lineJoin = "round";
+        backgroundCtx.beginPath();
+        backgroundCtx.moveTo(constrainedPoints[0].x, constrainedPoints[0].y);
+        for (let index = 1; index < constrainedPoints.length; index += 1) {
+          const previous = constrainedPoints[index - 1];
+          const point = constrainedPoints[index];
+          const segmentLength = segmentLengths[index - 1];
+
+          if (remainingLength >= segmentLength) {
+            backgroundCtx.lineTo(point.x, point.y);
+            remainingLength -= segmentLength;
+            continue;
+          }
+
+          const segmentProgress = Math.max(0, remainingLength / Math.max(1, segmentLength));
+          backgroundCtx.lineTo(
+            previous.x + (point.x - previous.x) * segmentProgress,
+            previous.y + (point.y - previous.y) * segmentProgress,
+          );
+          break;
+        }
+        backgroundCtx.globalAlpha = opacity * 0.12;
+        backgroundCtx.strokeStyle = "rgba(255, 255, 255, 0.9)";
+        backgroundCtx.lineWidth = 7.2;
+        backgroundCtx.stroke();
+
+        backgroundCtx.globalAlpha = opacity * 0.36;
+        backgroundCtx.strokeStyle = "rgba(17, 17, 17, 0.24)";
+        backgroundCtx.lineWidth = 2.8;
+        backgroundCtx.stroke();
+        backgroundCtx.restore();
+      });
     };
 
     const animate = (time: number) => {
       const scrollY = window.scrollY;
+      easedScrollProgress += (targetScrollProgress - easedScrollProgress) * 0.075;
+      document.documentElement.style.setProperty(
+        "--scroll-progress-eased",
+        easedScrollProgress.toFixed(4),
+      );
       pointer.x += (pointer.tx - pointer.x) * 0.16;
       pointer.y += (pointer.ty - pointer.y) * 0.16;
 
@@ -165,7 +351,7 @@ export default function InteractiveLayer() {
           ((dot.baseY - scrollOffset + height * 1.5) % (height + 180)) - 90;
         const dy = scrolledY - pointer.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
-        const force = Math.max(0, 1 - distance / 180);
+        const force = Math.max(0, 1 - distance / pointerInfluenceRadius);
         const driftX = Math.sin(wave + dot.phase + scrollY * 0.006) * 8;
         const driftY = Math.cos(wave * 0.82 + dot.phase) * 8;
         dot.x = dot.baseX + driftX + dx * force * 0.12;
@@ -176,6 +362,7 @@ export default function InteractiveLayer() {
         backgroundCtx.arc(dot.x, dot.y, dot.size + force * 2.4, 0, Math.PI * 2);
         backgroundCtx.fill();
       });
+      drawLightningPaths(time);
 
       riverCtx.clearRect(0, 0, width, height);
       const riverGradient = riverCtx.createLinearGradient(0, 0, width, 0);
@@ -233,7 +420,8 @@ export default function InteractiveLayer() {
       { threshold: 0.18 },
     );
 
-    document.querySelectorAll(".reveal").forEach((element) => {
+    document.querySelectorAll<HTMLElement>(".reveal").forEach((element, index) => {
+      element.style.setProperty("--reveal-index", `${Math.min(index, 10)}`);
       observer.observe(element);
     });
 
