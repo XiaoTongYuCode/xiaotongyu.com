@@ -13,10 +13,12 @@ type LoadingGateProps = {
   introDurationMs?: number;
   lockBodyScroll?: boolean;
   onComplete?: () => void;
+  revealDelayMs?: number;
 };
 
 const DEFAULT_INTRO_DURATION_MS = 1280;
 const DEFAULT_EXIT_DURATION_MS = 2800;
+const DEFAULT_REVEAL_DELAY_MS = 1000;
 
 export default function LoadingGate({
   buttonLabel = "Enter site",
@@ -24,6 +26,7 @@ export default function LoadingGate({
   introDurationMs = DEFAULT_INTRO_DURATION_MS,
   lockBodyScroll = true,
   onComplete,
+  revealDelayMs = DEFAULT_REVEAL_DELAY_MS,
 }: LoadingGateProps) {
   const [phase, setPhase] = useState<LoadingGatePhase>("intro");
   const exitTimerRef = useRef<number | null>(null);
@@ -79,7 +82,7 @@ export default function LoadingGate({
     setPhase("exiting");
     exitTimerRef.current = window.setTimeout(() => {
       setPhase("done");
-    }, exitDurationMs);
+    }, exitDurationMs + revealDelayMs);
   };
 
   if (phase === "done") {
@@ -89,7 +92,12 @@ export default function LoadingGate({
   return (
     <div
       className={["loadingGate", `loadingGate--${phase}`].join(" ")}
-      style={{ "--loading-gate-exit-duration": `${exitDurationMs}ms` } as CSSProperties}
+      style={
+        {
+          "--loading-gate-exit-duration": `${exitDurationMs}ms`,
+          "--loading-gate-reveal-delay": `${revealDelayMs}ms`,
+        } as CSSProperties
+      }
       role="dialog"
       aria-modal="true"
     >
@@ -101,6 +109,12 @@ export default function LoadingGate({
           phase={phase}
           title="Loading"
         />
+        <div className="loadingGate__copy">
+          <span className="loadingGate__name">Keep up and be committed to the next AI era</span>
+          <span className="loadingGate__line">
+            Focus on Game / Web / APP
+          </span>
+        </div>
         <button className="loadingGate__button" type="button" onClick={enterSite}>
           {buttonLabel}
         </button>
@@ -126,7 +140,7 @@ const loadingGateStyles = `
 
 .loadingGate--exiting {
   pointer-events: none;
-  animation: loadingGateOverlayExit var(--loading-gate-exit-duration) cubic-bezier(0.86, 0, 0.07, 1) both;
+  animation: loadingGateOverlayExit var(--loading-gate-reveal-delay) cubic-bezier(0.22, 1, 0.36, 1) var(--loading-gate-exit-duration) both;
 }
 
 .loadingGate__stage {
@@ -138,34 +152,51 @@ const loadingGateStyles = `
   transform: translateY(-5vh);
 }
 
+.loadingGate__copy {
+  display: grid;
+  justify-items: center;
+  gap: 16px;
+  margin-top: clamp(20px, 2vh, 30px);
+  opacity: 0;
+  text-align: center;
+  transform: translateY(8px);
+  animation: loadingGateCopyIn 520ms var(--loading-gate-ease-load) 780ms both;
+}
+
+.loadingGate__line {
+  max-width: min(260px, calc(100vw - 72px));
+  color: rgba(5, 5, 5, 0.48);
+  font-size: 12px;
+  font-weight: 620;
+  line-height: 1.35;
+}
+
 .loadingGate__button {
-  min-height: 34px;
-  margin-top: clamp(66px, 14vh, 112px);
-  padding: 0 18px;
-  border: 1px solid rgba(5, 5, 5, 0.16);
+  min-height: 24px;
+  margin-top: 24px;
+  padding: 0 16px;
+  border: 0;
   border-radius: 999px;
-  background: rgba(5, 5, 5, 0.06);
-  color: rgba(5, 5, 5, 0.82);
+  // background: #111;
+  // color: #fff;
   cursor: pointer;
   font: inherit;
   font-size: 11px;
   font-weight: 720;
   line-height: 1;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
   opacity: 0;
   transform: translateY(8px);
   transition:
-    border-color 180ms var(--loading-gate-ease-hover),
     background 180ms var(--loading-gate-ease-hover),
+    box-shadow 180ms var(--loading-gate-ease-hover),
     color 180ms var(--loading-gate-ease-hover),
     transform 180ms var(--loading-gate-ease-hover);
   animation: loadingGateButtonIn 520ms var(--loading-gate-ease-load) 920ms both;
 }
 
 .loadingGate__button:hover {
-  border-color: rgba(5, 5, 5, 0.3);
-  background: rgba(5, 5, 5, 0.1);
-  color: #050505;
+  background: #272727;
+  color: #fff;
   transform: translateY(6px);
 }
 
@@ -174,6 +205,7 @@ const loadingGateStyles = `
   outline-offset: 4px;
 }
 
+.loadingGate--exiting .loadingGate__copy,
 .loadingGate--exiting .loadingGate__button {
   animation: loadingGateButtonOut 220ms ease both;
 }
@@ -183,20 +215,34 @@ const loadingGateStyles = `
     transform: translateY(-8vh);
   }
 
-  .loadingGate__button {
-    margin-top: 72px;
+  .loadingGate__copy {
+    margin-top: 58px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .loadingGate,
+  .loadingGate__copy,
   .loadingGate__button {
     animation: none;
   }
 
+  .loadingGate__copy,
   .loadingGate__button {
     opacity: 1;
     transform: none;
+  }
+}
+
+@keyframes loadingGateCopyIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -225,12 +271,11 @@ const loadingGateStyles = `
 }
 
 @keyframes loadingGateOverlayExit {
-  0%,
-  84% {
+  from {
     opacity: 1;
   }
 
-  100% {
+  to {
     opacity: 0;
     visibility: hidden;
   }

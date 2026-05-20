@@ -22,13 +22,204 @@ export type ThreePhaseWaveLoaderProps = {
   title?: string;
 };
 
-const DEFAULT_EXIT_DURATION_MS = 2800;
+type GradientStopConfig = {
+  offset: string;
+  opacity: number;
+};
+
+// SVG canvas and visual center. / SVG 画布与视觉中心。
+const SVG_CONFIG = {
+  centerX: 80,
+  centerY: 36,
+  height: 72,
+  viewBox: "0 0 160 72",
+  width: 160,
+} as const;
+
+// Wave geometry. / 波形轨道几何参数。
+const WAVE_TRACK_CONFIG = {
+  amplitude: 17,
+  circleRadius: 15,
+  endpointGateExponent: 0.36,
+  envelopeBase: 0.84,
+  envelopePrimaryFrequency: 0.82,
+  envelopePrimaryStrength: 0.11,
+  envelopeSecondaryFrequency: 1.74,
+  envelopeSecondaryStrength: 0.05,
+  halfWavelengthOffset: Math.PI,
+  exitCircleRadius: 16,
+  segmentCount: 28,
+  width: 124,
+} as const;
+
+// Track motion and exit timing. / 轨道运动与退出阶段时间比例。
+const MOTION_CONFIG = {
+  defaultExitDurationMs: 2800,
+  exitAccelerationRatio: 0.6,
+  exitCircleMorphRatio: 0.12,
+  exitMaxTrackSpeed: 0.2,
+  exitMinWidthScale: 0.28,
+  exitNarrowingRatio: 0.25,
+  exitStartTrackSpeed: 0.004,
+  introTrackSpeed: 0.0024,
+  waitingTrackSpeed: 0.0032,
+} as const;
+
+const EXIT_FINAL_RATIO =
+  1 - MOTION_CONFIG.exitAccelerationRatio - MOTION_CONFIG.exitNarrowingRatio;
+const EXIT_NARROWING_START_RATIO = MOTION_CONFIG.exitAccelerationRatio;
+const EXIT_FINAL_START_RATIO =
+  MOTION_CONFIG.exitAccelerationRatio + MOTION_CONFIG.exitNarrowingRatio;
+
+// Keyframe checkpoints inside the final phase. / 最终阶段内部关键帧位置。
+const EXIT_KEYFRAME_CONFIG = {
+  circlePopWithinFinalRatio: 0.35,
+  circlePeakWithinFinalRatio: 0.65,
+  ribbonDimWithinFinalRatio: 0.65,
+  stageSettleWithinFinalRatio: 0.6,
+} as const;
+
+// SVG mask gradients that control extra thickness. / 控制轨道增厚区域的 SVG 蒙版渐变。
+const MASK_CONFIG = {
+  color: "#fff",
+  horizontalX1: 18,
+  horizontalX2: 142,
+  verticalY1: 14,
+  verticalY2: 58,
+  midHorizontalStops: [
+    { offset: "0", opacity: 0.62 },
+    { offset: "0.28", opacity: 0.16 },
+    { offset: "0.5", opacity: 0.06 },
+    { offset: "0.72", opacity: 0.16 },
+    { offset: "1", opacity: 0.62 },
+  ],
+  farHorizontalStops: [
+    { offset: "0", opacity: 0.68 },
+    { offset: "0.22", opacity: 0.12 },
+    { offset: "0.42", opacity: 0 },
+    { offset: "0.58", opacity: 0 },
+    { offset: "0.78", opacity: 0.12 },
+    { offset: "1", opacity: 0.68 },
+  ],
+  midVerticalStops: [
+    { offset: "0", opacity: 0.36 },
+    { offset: "0.32", opacity: 0.1 },
+    { offset: "0.5", opacity: 0 },
+    { offset: "0.68", opacity: 0.1 },
+    { offset: "1", opacity: 0.36 },
+  ],
+  farVerticalStops: [
+    { offset: "0", opacity: 0.42 },
+    { offset: "0.28", opacity: 0.08 },
+    { offset: "0.44", opacity: 0 },
+    { offset: "0.56", opacity: 0 },
+    { offset: "0.72", opacity: 0.08 },
+    { offset: "1", opacity: 0.42 },
+  ],
+} satisfies Record<string, number | string | GradientStopConfig[]>;
+
+// CSS tunables for size, stroke, opacity, timing, and transforms. / 尺寸、线宽、透明度、时间与变换参数。
+const STYLE_CONFIG = {
+  iconMinWidthPx: 118,
+  iconPreferredWidthVw: 18,
+  iconMaxWidthPx: 164,
+  color: "#050505",
+  breathPeakPercent: 50,
+  easeLoad: "cubic-bezier(0.16, 1, 0.3, 1)",
+  easeExit: "cubic-bezier(0.86, 0, 0.07, 1)",
+  easeExitStroke: "cubic-bezier(0.7, 0, 0.84, 0)",
+  shadowSoft: "0 0 10px rgba(0, 0, 0, 0.08)",
+  shadowDeep: "0 12px 24px rgba(0, 0, 0, 0.18)",
+  introDurationMs: 1180,
+  introPathFadeInPercent: 18,
+  introOvershootPercent: 56,
+  waitingTransitionMs: 540,
+  breathDurationMs: 2600,
+  circleSpinMs: 220,
+  glowIntroOpacity: 0.12,
+  glowIdleOpacity: 0.08,
+  glowBreathOpacity: 0.16,
+  glowStrokeWidth: 6.4,
+  glowIdleStrokeWidth: 5.4,
+  glowBreathStrokeWidth: 7,
+  glowBlurPx: 5,
+  baseInitialOpacity: 0.34,
+  baseExitOpacity: 0.58,
+  baseReducedOpacity: 0.5,
+  baseStrokeWidth: 1.55,
+  baseIdleStrokeWidth: 1.45,
+  baseBreathStrokeWidth: 1.72,
+  baseBreathOpacity: 0.68,
+  distanceMidOpacity: 0.56,
+  distanceFarOpacity: 0.9,
+  distanceIdleOpacity: 0.72,
+  distanceMidStrokeWidth: 3.28,
+  distanceFarStrokeWidth: 5.6,
+  distanceFarShadow: "0 0 7px rgba(0, 0, 0, 0.18)",
+  exitCircleStrokeWidth: 3.4,
+  exitCircleDash: "0.18 0.82",
+  exitCirclePopOpacity: 0.86,
+  exitDashFinal: "0.08 0.92",
+  exitCircleStartScale: 0.3,
+  exitCirclePopScale: 0.96,
+  exitCirclePeakScale: 1,
+  exitCircleEndScale: 0.05,
+  markIntroStartScaleX: 0.22,
+  markIntroStartScaleY: 0.88,
+  markIntroOvershootScaleX: 1.08,
+  markIntroBlurPx: 7,
+  stageSettleScale: 0.68,
+  stageEndScale: 0.02,
+  stageSettleBlurPx: 0.5,
+  stageEndBlurPx: 8,
+  symbolSettleScale: 0.84,
+  symbolEndScale: 0.04,
+  symbolSettleRotateDeg: 360,
+  symbolEndRotateDeg: 1180,
+  ribbonDimOpacity: 0.45,
+  ribbonDimRotateDeg: 540,
+  ribbonEndRotateDeg: 900,
+} as const;
+
+const DEFAULT_EXIT_DURATION_MS = MOTION_CONFIG.defaultExitDurationMs;
 
 const toPathCoordinate = (value: number) => value.toFixed(2);
+const toPercent = (ratio: number) => `${Number((ratio * 100).toFixed(3))}%`;
+const exitFinalCheckpoint = (withinFinalRatio: number) =>
+  toPercent(EXIT_FINAL_START_RATIO + EXIT_FINAL_RATIO * withinFinalRatio);
+
+const EXIT_FINAL_START_PERCENT = toPercent(EXIT_FINAL_START_RATIO);
+const EXIT_STAGE_SETTLE_PERCENT = exitFinalCheckpoint(
+  EXIT_KEYFRAME_CONFIG.stageSettleWithinFinalRatio,
+);
+const EXIT_RIBBON_DIM_PERCENT = exitFinalCheckpoint(
+  EXIT_KEYFRAME_CONFIG.ribbonDimWithinFinalRatio,
+);
+const EXIT_CIRCLE_POP_PERCENT = exitFinalCheckpoint(
+  EXIT_KEYFRAME_CONFIG.circlePopWithinFinalRatio,
+);
+const EXIT_CIRCLE_PEAK_PERCENT = exitFinalCheckpoint(
+  EXIT_KEYFRAME_CONFIG.circlePeakWithinFinalRatio,
+);
+
+const renderGradientStops = (stops: GradientStopConfig[]) =>
+  stops.map(({ offset, opacity }) => (
+    <stop
+      key={`${offset}-${opacity}`}
+      offset={offset}
+      stopColor={MASK_CONFIG.color}
+      stopOpacity={opacity}
+    />
+  ));
 
 const pointsToSmoothPath = (points: TrackPoint[]) => {
   const firstPoint = points[0];
-  let path = `M${toPathCoordinate(firstPoint.x)} ${toPathCoordinate(firstPoint.y)}`;
+
+  return `M${toPathCoordinate(firstPoint.x)} ${toPathCoordinate(firstPoint.y)}${pointsToSmoothPathSegments(points)}`;
+};
+
+const pointsToSmoothPathSegments = (points: TrackPoint[]) => {
+  let path = "";
 
   for (let index = 0; index < points.length - 1; index += 1) {
     const previous = points[Math.max(0, index - 1)];
@@ -61,34 +252,38 @@ const smoothStep = (value: number) => {
 };
 
 const buildWaveTrackPath = (phase = 0, options: WaveTrackOptions = {}) => {
-  const segmentCount = 28;
-  const centerX = 80;
-  const centerY = 36;
+  const segmentCount = WAVE_TRACK_CONFIG.segmentCount;
+  const centerX = SVG_CONFIG.centerX;
+  const centerY = SVG_CONFIG.centerY;
   const widthScale = options.widthScale ?? 1;
   const circleProgress = options.circleProgress ?? 0;
-  const width = 124 * widthScale;
+  const width = WAVE_TRACK_CONFIG.width * widthScale;
   const leftX = centerX - width / 2;
-  const amplitude = 17;
-  const circleRadius = 15;
-  const halfWavelengthOffset = Math.PI;
   const buildRailPoint = (progress: number, railOffset: number, rail: "upper" | "lower") => {
     const sampleX = progress * Math.PI * 2 + phase;
-    const endpointGate = Math.pow(Math.sin(progress * Math.PI), 0.36);
+    const endpointGate = Math.pow(
+      Math.sin(progress * Math.PI),
+      WAVE_TRACK_CONFIG.endpointGateExponent,
+    );
     const wave = Math.sin(sampleX + railOffset);
     const envelope =
-      0.84 +
-      Math.sin(sampleX * 0.82 + railOffset) * 0.11 +
-      Math.sin(sampleX * 1.74 - railOffset) * 0.05;
+      WAVE_TRACK_CONFIG.envelopeBase +
+      Math.sin(sampleX * WAVE_TRACK_CONFIG.envelopePrimaryFrequency + railOffset) *
+        WAVE_TRACK_CONFIG.envelopePrimaryStrength +
+      Math.sin(sampleX * WAVE_TRACK_CONFIG.envelopeSecondaryFrequency - railOffset) *
+        WAVE_TRACK_CONFIG.envelopeSecondaryStrength;
 
     const wavePoint = {
       x: leftX + progress * width,
-      y: centerY + wave * endpointGate * amplitude * envelope,
+      y: centerY + wave * endpointGate * WAVE_TRACK_CONFIG.amplitude * envelope,
     };
     const circlePoint = {
-      x: centerX - Math.cos(progress * Math.PI) * circleRadius,
+      x: centerX - Math.cos(progress * Math.PI) * WAVE_TRACK_CONFIG.circleRadius,
       y:
         centerY +
-        Math.sin(progress * Math.PI) * circleRadius * (rail === "upper" ? -1 : 1),
+        Math.sin(progress * Math.PI) *
+          WAVE_TRACK_CONFIG.circleRadius *
+          (rail === "upper" ? -1 : 1),
     };
 
     return {
@@ -102,18 +297,16 @@ const buildWaveTrackPath = (phase = 0, options: WaveTrackOptions = {}) => {
 
     return buildRailPoint(progress, 0, "upper");
   });
-  const lowerRail = Array.from({ length: segmentCount }, (_, index) => {
-    const progress = (segmentCount - index - 1) / segmentCount;
+  const lowerRail = Array.from({ length: segmentCount + 1 }, (_, index) => {
+    const progress = (segmentCount - index) / segmentCount;
 
-    return buildRailPoint(progress, halfWavelengthOffset, "lower");
+    return buildRailPoint(progress, WAVE_TRACK_CONFIG.halfWavelengthOffset, "lower");
   });
 
-  return `${pointsToSmoothPath([...upperRail, ...lowerRail])} Z`;
+  return `${pointsToSmoothPath(upperRail)} L${toPathCoordinate(lowerRail[0].x)} ${toPathCoordinate(lowerRail[0].y)}${pointsToSmoothPathSegments(lowerRail)} L${toPathCoordinate(upperRail[0].x)} ${toPathCoordinate(upperRail[0].y)} Z`;
 };
 
 const initialTrackPath = buildWaveTrackPath();
-const EXIT_START_TRACK_SPEED = 0.004;
-const EXIT_MAX_TRACK_SPEED = 0.25;
 
 export default function ThreePhaseWaveLoader({
   className,
@@ -134,6 +327,8 @@ export default function ThreePhaseWaveLoader({
   const farMaskId = `tpwl-far-mask-${svgId}`;
   const midGradientId = `tpwl-mid-mask-gradient-${svgId}`;
   const farGradientId = `tpwl-far-mask-gradient-${svgId}`;
+  const midVerticalGradientId = `tpwl-mid-vertical-mask-gradient-${svgId}`;
+  const farVerticalGradientId = `tpwl-far-vertical-mask-gradient-${svgId}`;
 
   useEffect(() => {
     if (phase === "exiting") {
@@ -160,34 +355,39 @@ export default function ThreePhaseWaveLoader({
         phase === "exiting" && exitStartedAtRef.current !== null
           ? clamp((time - exitStartedAtRef.current) / exitDurationMs)
           : 0;
-      const speedProgress = clamp(exitProgress / 0.58);
+      const speedProgress = clamp(exitProgress / MOTION_CONFIG.exitAccelerationRatio);
       const exitAcceleration = easeInQuint(speedProgress);
       const speed =
         phase === "exiting"
-          ? lerp(EXIT_START_TRACK_SPEED, EXIT_MAX_TRACK_SPEED, exitAcceleration)
+          ? lerp(
+              MOTION_CONFIG.exitStartTrackSpeed,
+              MOTION_CONFIG.exitMaxTrackSpeed,
+              exitAcceleration,
+            )
           : phase === "waiting"
-            ? 0.0032
-            : 0.0016;
-      const narrowProgress = easeOutCubic(clamp((exitProgress - 0.58) / 0.12));
-      const widthScale = phase === "exiting" ? lerp(1, 0.28, narrowProgress) : 1;
+            ? MOTION_CONFIG.waitingTrackSpeed
+            : MOTION_CONFIG.introTrackSpeed;
+      const narrowProgress = easeOutCubic(
+        clamp((exitProgress - EXIT_NARROWING_START_RATIO) / MOTION_CONFIG.exitNarrowingRatio),
+      );
+      const widthScale =
+        phase === "exiting" ? lerp(1, MOTION_CONFIG.exitMinWidthScale, narrowProgress) : 1;
       const circleProgress =
-        phase === "exiting" ? smoothStep((exitProgress - 0.7) / 0.12) : 0;
+        phase === "exiting"
+          ? smoothStep(
+              (exitProgress - EXIT_FINAL_START_RATIO) / MOTION_CONFIG.exitCircleMorphRatio,
+            )
+          : 0;
       trackPhaseRef.current += elapsed * speed;
       lastTrackFrameTimeRef.current = time;
       const currentPath = buildWaveTrackPath(trackPhaseRef.current, {
         circleProgress,
         widthScale,
       });
-      const pathElements = [
-        glowPathRef.current,
-        basePathRef.current,
-        midDistancePathRef.current,
-        farDistancePathRef.current,
-      ].filter((element): element is SVGPathElement => Boolean(element));
-
-      pathElements.forEach((element) => {
-        element.setAttribute("d", currentPath);
-      });
+      glowPathRef.current?.setAttribute("d", currentPath);
+      basePathRef.current?.setAttribute("d", currentPath);
+      midDistancePathRef.current?.setAttribute("d", currentPath);
+      farDistancePathRef.current?.setAttribute("d", currentPath);
       animationFrame = window.requestAnimationFrame(animateTrack);
     };
 
@@ -203,8 +403,15 @@ export default function ThreePhaseWaveLoader({
       <style>{loaderIconStyles}</style>
       <svg
         className={["tpwlIcon", `tpwlIcon--${phase}`, className].filter(Boolean).join(" ")}
-        style={{ "--tpwl-exit-duration": `${exitDurationMs}ms` } as CSSProperties}
-        viewBox="0 0 160 72"
+        style={
+          {
+            "--tpwl-acceleration-ratio": MOTION_CONFIG.exitAccelerationRatio,
+            "--tpwl-narrowing-ratio": MOTION_CONFIG.exitNarrowingRatio,
+            "--tpwl-final-ratio": EXIT_FINAL_RATIO,
+            "--tpwl-exit-duration": `${exitDurationMs}ms`,
+          } as CSSProperties
+        }
+        viewBox={SVG_CONFIG.viewBox}
         role={title ? "img" : undefined}
         aria-hidden={title ? undefined : true}
         aria-label={title}
@@ -213,38 +420,59 @@ export default function ThreePhaseWaveLoader({
         <defs>
           <linearGradient
             id={midGradientId}
-            x1="0"
-            x2="0"
-            y1="10"
-            y2="62"
+            x1={MASK_CONFIG.horizontalX1}
+            x2={MASK_CONFIG.horizontalX2}
+            y1="0"
+            y2="0"
             gradientUnits="userSpaceOnUse"
           >
-            <stop offset="0" stopColor="#fff" stopOpacity="0.78" />
-            <stop offset="0.34" stopColor="#fff" stopOpacity="0.12" />
-            <stop offset="0.5" stopColor="#fff" stopOpacity="0.04" />
-            <stop offset="0.66" stopColor="#fff" stopOpacity="0.12" />
-            <stop offset="1" stopColor="#fff" stopOpacity="0.78" />
+            {renderGradientStops(MASK_CONFIG.midHorizontalStops)}
           </linearGradient>
           <linearGradient
             id={farGradientId}
-            x1="0"
-            x2="0"
-            y1="10"
-            y2="62"
+            x1={MASK_CONFIG.horizontalX1}
+            x2={MASK_CONFIG.horizontalX2}
+            y1="0"
+            y2="0"
             gradientUnits="userSpaceOnUse"
           >
-            <stop offset="0" stopColor="#fff" stopOpacity="0.9" />
-            <stop offset="0.26" stopColor="#fff" stopOpacity="0.28" />
-            <stop offset="0.44" stopColor="#fff" stopOpacity="0" />
-            <stop offset="0.56" stopColor="#fff" stopOpacity="0" />
-            <stop offset="0.74" stopColor="#fff" stopOpacity="0.28" />
-            <stop offset="1" stopColor="#fff" stopOpacity="0.9" />
+            {renderGradientStops(MASK_CONFIG.farHorizontalStops)}
+          </linearGradient>
+          <linearGradient
+            id={midVerticalGradientId}
+            x1="0"
+            x2="0"
+            y1={MASK_CONFIG.verticalY1}
+            y2={MASK_CONFIG.verticalY2}
+            gradientUnits="userSpaceOnUse"
+          >
+            {renderGradientStops(MASK_CONFIG.midVerticalStops)}
+          </linearGradient>
+          <linearGradient
+            id={farVerticalGradientId}
+            x1="0"
+            x2="0"
+            y1={MASK_CONFIG.verticalY1}
+            y2={MASK_CONFIG.verticalY2}
+            gradientUnits="userSpaceOnUse"
+          >
+            {renderGradientStops(MASK_CONFIG.farVerticalStops)}
           </linearGradient>
           <mask id={midMaskId} maskUnits="userSpaceOnUse">
-            <rect width="160" height="72" fill={`url(#${midGradientId})`} />
+            <rect width={SVG_CONFIG.width} height={SVG_CONFIG.height} fill={`url(#${midGradientId})`} />
+            <rect
+              width={SVG_CONFIG.width}
+              height={SVG_CONFIG.height}
+              fill={`url(#${midVerticalGradientId})`}
+            />
           </mask>
           <mask id={farMaskId} maskUnits="userSpaceOnUse">
-            <rect width="160" height="72" fill={`url(#${farGradientId})`} />
+            <rect width={SVG_CONFIG.width} height={SVG_CONFIG.height} fill={`url(#${farGradientId})`} />
+            <rect
+              width={SVG_CONFIG.width}
+              height={SVG_CONFIG.height}
+              fill={`url(#${farVerticalGradientId})`}
+            />
           </mask>
         </defs>
         <g className="tpwlIcon__symbol">
@@ -276,7 +504,13 @@ export default function ThreePhaseWaveLoader({
               mask={`url(#${farMaskId})`}
             />
           </g>
-          <circle className="tpwlIcon__exitCircle" cx="80" cy="36" r="16" pathLength="1" />
+          <circle
+            className="tpwlIcon__exitCircle"
+            cx={SVG_CONFIG.centerX}
+            cy={SVG_CONFIG.centerY}
+            r={WAVE_TRACK_CONFIG.exitCircleRadius}
+            pathLength="1"
+          />
         </g>
       </svg>
     </>
@@ -285,20 +519,20 @@ export default function ThreePhaseWaveLoader({
 
 const loaderIconStyles = `
 .tpwlIcon {
-  --tpwl-ease-load: cubic-bezier(0.16, 1, 0.3, 1);
+  --tpwl-ease-load: ${STYLE_CONFIG.easeLoad};
   display: block;
-  width: clamp(118px, 18vw, 164px);
+  width: clamp(${STYLE_CONFIG.iconMinWidthPx}px, ${STYLE_CONFIG.iconPreferredWidthVw}vw, ${STYLE_CONFIG.iconMaxWidthPx}px);
   height: auto;
   overflow: visible;
-  color: #050505;
+  color: ${STYLE_CONFIG.color};
   filter:
-    drop-shadow(0 0 10px rgba(0, 0, 0, 0.08))
-    drop-shadow(0 12px 24px rgba(0, 0, 0, 0.18));
+    drop-shadow(${STYLE_CONFIG.shadowSoft})
+    drop-shadow(${STYLE_CONFIG.shadowDeep});
 }
 
 .tpwlIcon__symbol,
 .tpwlIcon__ribbon {
-  transform-origin: 80px 36px;
+  transform-origin: ${SVG_CONFIG.centerX}px ${SVG_CONFIG.centerY}px;
 }
 
 .tpwlIcon__glow,
@@ -314,104 +548,104 @@ const loaderIconStyles = `
 
 .tpwlIcon__glow {
   opacity: 0;
-  stroke-width: 6.4;
+  stroke-width: ${STYLE_CONFIG.glowStrokeWidth};
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
-  filter: blur(5px);
-  animation: tpwlIconGlowIntro 1180ms var(--tpwl-ease-load) both;
+  filter: blur(${STYLE_CONFIG.glowBlurPx}px);
+  animation: tpwlIconGlowIntro ${STYLE_CONFIG.introDurationMs}ms var(--tpwl-ease-load) both;
 }
 
 .tpwlIcon__base {
-  opacity: 0.34;
-  stroke-width: 1.55;
+  opacity: ${STYLE_CONFIG.baseInitialOpacity};
+  stroke-width: ${STYLE_CONFIG.baseStrokeWidth};
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
-  animation: tpwlIconPathIntro 1180ms var(--tpwl-ease-load) both;
+  animation: tpwlIconPathIntro ${STYLE_CONFIG.introDurationMs}ms var(--tpwl-ease-load) both;
 }
 
 .tpwlIcon__distance {
   opacity: 0;
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
-  animation: tpwlIconPathIntro 1180ms var(--tpwl-ease-load) both;
+  animation: tpwlIconPathIntro ${STYLE_CONFIG.introDurationMs}ms var(--tpwl-ease-load) both;
 }
 
 .tpwlIcon__distance--mid {
-  opacity: 0.56;
-  stroke-width: 3.05;
+  opacity: ${STYLE_CONFIG.distanceMidOpacity};
+  stroke-width: ${STYLE_CONFIG.distanceMidStrokeWidth};
 }
 
 .tpwlIcon__distance--far {
-  opacity: 0.9;
-  stroke-width: 5.15;
-  filter: drop-shadow(0 0 7px rgba(0, 0, 0, 0.18));
+  opacity: ${STYLE_CONFIG.distanceFarOpacity};
+  stroke-width: ${STYLE_CONFIG.distanceFarStrokeWidth};
+  filter: drop-shadow(${STYLE_CONFIG.distanceFarShadow});
 }
 
 .tpwlIcon__exitCircle {
   opacity: 0;
-  stroke-width: 3.4;
-  stroke-dasharray: 0.18 0.82;
+  stroke-width: ${STYLE_CONFIG.exitCircleStrokeWidth};
+  stroke-dasharray: ${STYLE_CONFIG.exitCircleDash};
   stroke-dashoffset: 0;
   transform-box: fill-box;
   transform-origin: center;
 }
 
 .tpwlIcon--intro {
-  animation: tpwlIconMarkIntro 1180ms var(--tpwl-ease-load) both;
+  animation: tpwlIconMarkIntro ${STYLE_CONFIG.introDurationMs}ms var(--tpwl-ease-load) both;
 }
 
 .tpwlIcon--waiting .tpwlIcon__base {
   stroke-dashoffset: 0;
   animation:
-    tpwlIconPathToBreath 540ms ease-out both,
-    tpwlIconPathBreath 2600ms ease-in-out 540ms infinite;
+    tpwlIconPathToBreath ${STYLE_CONFIG.waitingTransitionMs}ms ease-out both,
+    tpwlIconPathBreath ${STYLE_CONFIG.breathDurationMs}ms ease-in-out ${STYLE_CONFIG.waitingTransitionMs}ms infinite;
 }
 
 .tpwlIcon--waiting .tpwlIcon__distance {
   stroke-dashoffset: 0;
   animation:
-    tpwlIconDistanceToBreath 540ms ease-out both,
-    tpwlIconDistanceBreath 2600ms ease-in-out 540ms infinite;
+    tpwlIconDistanceToBreath ${STYLE_CONFIG.waitingTransitionMs}ms ease-out both,
+    tpwlIconDistanceBreath ${STYLE_CONFIG.breathDurationMs}ms ease-in-out ${STYLE_CONFIG.waitingTransitionMs}ms infinite;
 }
 
 .tpwlIcon--waiting .tpwlIcon__glow {
   stroke-dashoffset: 0;
   animation:
-    tpwlIconGlowToBreath 540ms ease-out both,
-    tpwlIconGlowBreath 2600ms ease-in-out 540ms infinite;
+    tpwlIconGlowToBreath ${STYLE_CONFIG.waitingTransitionMs}ms ease-out both,
+    tpwlIconGlowBreath ${STYLE_CONFIG.breathDurationMs}ms ease-in-out ${STYLE_CONFIG.waitingTransitionMs}ms infinite;
 }
 
 .tpwlIcon--exiting {
-  animation: tpwlIconStageExit var(--tpwl-exit-duration) cubic-bezier(0.86, 0, 0.07, 1) both;
+  animation: tpwlIconStageExit var(--tpwl-exit-duration) ${STYLE_CONFIG.easeExit} both;
 }
 
 .tpwlIcon--exiting .tpwlIcon__symbol {
-  animation: tpwlIconSymbolExit var(--tpwl-exit-duration) cubic-bezier(0.86, 0, 0.07, 1) both;
+  animation: tpwlIconSymbolExit var(--tpwl-exit-duration) ${STYLE_CONFIG.easeExit} both;
 }
 
 .tpwlIcon--exiting .tpwlIcon__ribbon {
-  animation: tpwlIconRibbonExit var(--tpwl-exit-duration) cubic-bezier(0.86, 0, 0.07, 1) both;
+  animation: tpwlIconRibbonExit var(--tpwl-exit-duration) ${STYLE_CONFIG.easeExit} both;
 }
 
 .tpwlIcon--exiting .tpwlIcon__base {
   stroke-dashoffset: 0;
-  animation: tpwlIconBaseExit var(--tpwl-exit-duration) cubic-bezier(0.7, 0, 0.84, 0) both;
+  animation: tpwlIconBaseExit var(--tpwl-exit-duration) ${STYLE_CONFIG.easeExitStroke} both;
 }
 
 .tpwlIcon--exiting .tpwlIcon__distance {
   stroke-dashoffset: 0;
-  animation: tpwlIconDistanceExit var(--tpwl-exit-duration) cubic-bezier(0.7, 0, 0.84, 0) both;
+  animation: tpwlIconDistanceExit var(--tpwl-exit-duration) ${STYLE_CONFIG.easeExitStroke} both;
 }
 
 .tpwlIcon--exiting .tpwlIcon__glow {
   stroke-dashoffset: 0;
-  animation: tpwlIconGlowExit var(--tpwl-exit-duration) cubic-bezier(0.7, 0, 0.84, 0) both;
+  animation: tpwlIconGlowExit var(--tpwl-exit-duration) ${STYLE_CONFIG.easeExitStroke} both;
 }
 
 .tpwlIcon--exiting .tpwlIcon__exitCircle {
   animation:
-    tpwlIconCircleExit var(--tpwl-exit-duration) cubic-bezier(0.86, 0, 0.07, 1) both,
-    tpwlIconCircleSpin 220ms linear infinite;
+    tpwlIconCircleExit var(--tpwl-exit-duration) ${STYLE_CONFIG.easeExit} both,
+    tpwlIconCircleSpin ${STYLE_CONFIG.circleSpinMs}ms linear infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -426,17 +660,17 @@ const loaderIconStyles = `
   }
 
   .tpwlIcon__glow {
-    opacity: 0.08;
+    opacity: ${STYLE_CONFIG.glowIdleOpacity};
     stroke-dashoffset: 0;
   }
 
   .tpwlIcon__base {
-    opacity: 0.5;
+    opacity: ${STYLE_CONFIG.baseReducedOpacity};
     stroke-dashoffset: 0;
   }
 
   .tpwlIcon__distance {
-    opacity: 0.9;
+    opacity: ${STYLE_CONFIG.distanceFarOpacity};
     stroke-dashoffset: 0;
   }
 }
@@ -444,19 +678,19 @@ const loaderIconStyles = `
 @keyframes tpwlIconMarkIntro {
   0% {
     opacity: 0;
-    transform: scaleX(0.22) scaleY(0.88);
+    transform: scaleX(${STYLE_CONFIG.markIntroStartScaleX}) scaleY(${STYLE_CONFIG.markIntroStartScaleY});
     filter:
-      drop-shadow(0 0 10px rgba(0, 0, 0, 0.08))
-      drop-shadow(0 12px 24px rgba(0, 0, 0, 0.18))
-      blur(7px);
+      drop-shadow(${STYLE_CONFIG.shadowSoft})
+      drop-shadow(${STYLE_CONFIG.shadowDeep})
+      blur(${STYLE_CONFIG.markIntroBlurPx}px);
   }
 
-  56% {
+  ${STYLE_CONFIG.introOvershootPercent}% {
     opacity: 1;
-    transform: scaleX(1.08) scaleY(1);
+    transform: scaleX(${STYLE_CONFIG.markIntroOvershootScaleX}) scaleY(1);
     filter:
-      drop-shadow(0 0 10px rgba(0, 0, 0, 0.08))
-      drop-shadow(0 12px 24px rgba(0, 0, 0, 0.18))
+      drop-shadow(${STYLE_CONFIG.shadowSoft})
+      drop-shadow(${STYLE_CONFIG.shadowDeep})
       blur(0);
   }
 
@@ -464,8 +698,8 @@ const loaderIconStyles = `
     opacity: 1;
     transform: scaleX(1) scaleY(1);
     filter:
-      drop-shadow(0 0 10px rgba(0, 0, 0, 0.08))
-      drop-shadow(0 12px 24px rgba(0, 0, 0, 0.18))
+      drop-shadow(${STYLE_CONFIG.shadowSoft})
+      drop-shadow(${STYLE_CONFIG.shadowDeep})
       blur(0);
   }
 }
@@ -476,7 +710,7 @@ const loaderIconStyles = `
     stroke-dashoffset: 1;
   }
 
-  18% {
+  ${STYLE_CONFIG.introPathFadeInPercent}% {
     opacity: 1;
   }
 
@@ -492,12 +726,12 @@ const loaderIconStyles = `
     stroke-dashoffset: 1;
   }
 
-  18% {
-    opacity: 0.12;
+  ${STYLE_CONFIG.introPathFadeInPercent}% {
+    opacity: ${STYLE_CONFIG.glowIntroOpacity};
   }
 
   100% {
-    opacity: 0.12;
+    opacity: ${STYLE_CONFIG.glowIntroOpacity};
     stroke-dashoffset: 0;
   }
 }
@@ -505,35 +739,35 @@ const loaderIconStyles = `
 @keyframes tpwlIconPathBreath {
   0%,
   100% {
-    opacity: 0.5;
-    stroke-width: 1.45;
+    opacity: ${STYLE_CONFIG.baseReducedOpacity};
+    stroke-width: ${STYLE_CONFIG.baseIdleStrokeWidth};
   }
 
-  50% {
-    opacity: 0.68;
-    stroke-width: 1.72;
+  ${STYLE_CONFIG.breathPeakPercent}% {
+    opacity: ${STYLE_CONFIG.baseBreathOpacity};
+    stroke-width: ${STYLE_CONFIG.baseBreathStrokeWidth};
   }
 }
 
 @keyframes tpwlIconPathToBreath {
   from {
     opacity: 1;
-    stroke-width: 1.55;
+    stroke-width: ${STYLE_CONFIG.baseStrokeWidth};
   }
 
   to {
-    opacity: 0.5;
-    stroke-width: 1.45;
+    opacity: ${STYLE_CONFIG.baseReducedOpacity};
+    stroke-width: ${STYLE_CONFIG.baseIdleStrokeWidth};
   }
 }
 
 @keyframes tpwlIconDistanceBreath {
   0%,
   100% {
-    opacity: 0.72;
+    opacity: ${STYLE_CONFIG.distanceIdleOpacity};
   }
 
-  50% {
+  ${STYLE_CONFIG.breathPeakPercent}% {
     opacity: 1;
   }
 }
@@ -544,157 +778,157 @@ const loaderIconStyles = `
   }
 
   to {
-    opacity: 0.72;
+    opacity: ${STYLE_CONFIG.distanceIdleOpacity};
   }
 }
 
 @keyframes tpwlIconGlowBreath {
   0%,
   100% {
-    opacity: 0.08;
-    stroke-width: 5.4;
+    opacity: ${STYLE_CONFIG.glowIdleOpacity};
+    stroke-width: ${STYLE_CONFIG.glowIdleStrokeWidth};
   }
 
-  50% {
-    opacity: 0.16;
-    stroke-width: 7;
+  ${STYLE_CONFIG.breathPeakPercent}% {
+    opacity: ${STYLE_CONFIG.glowBreathOpacity};
+    stroke-width: ${STYLE_CONFIG.glowBreathStrokeWidth};
   }
 }
 
 @keyframes tpwlIconGlowToBreath {
   from {
-    opacity: 0.12;
-    stroke-width: 6.4;
+    opacity: ${STYLE_CONFIG.glowIntroOpacity};
+    stroke-width: ${STYLE_CONFIG.glowStrokeWidth};
   }
 
   to {
-    opacity: 0.08;
-    stroke-width: 5.4;
+    opacity: ${STYLE_CONFIG.glowIdleOpacity};
+    stroke-width: ${STYLE_CONFIG.glowIdleStrokeWidth};
   }
 }
 
 @keyframes tpwlIconStageExit {
   0%,
-  70% {
+  ${EXIT_FINAL_START_PERCENT} {
     transform: scale(1);
     filter:
-      drop-shadow(0 0 10px rgba(0, 0, 0, 0.08))
-      drop-shadow(0 12px 24px rgba(0, 0, 0, 0.18))
+      drop-shadow(${STYLE_CONFIG.shadowSoft})
+      drop-shadow(${STYLE_CONFIG.shadowDeep})
       blur(0);
   }
 
-  88% {
-    transform: scale(0.68);
+  ${EXIT_STAGE_SETTLE_PERCENT} {
+    transform: scale(${STYLE_CONFIG.stageSettleScale});
     filter:
-      drop-shadow(0 0 10px rgba(0, 0, 0, 0.08))
-      drop-shadow(0 12px 24px rgba(0, 0, 0, 0.18))
-      blur(0.5px);
+      drop-shadow(${STYLE_CONFIG.shadowSoft})
+      drop-shadow(${STYLE_CONFIG.shadowDeep})
+      blur(${STYLE_CONFIG.stageSettleBlurPx}px);
   }
 
   100% {
-    transform: scale(0.02);
+    transform: scale(${STYLE_CONFIG.stageEndScale});
     filter:
       drop-shadow(0 0 0 rgba(0, 0, 0, 0))
       drop-shadow(0 0 0 rgba(0, 0, 0, 0))
-      blur(8px);
+      blur(${STYLE_CONFIG.stageEndBlurPx}px);
   }
 }
 
 @keyframes tpwlIconSymbolExit {
   0%,
-  70% {
+  ${EXIT_FINAL_START_PERCENT} {
     opacity: 1;
     transform: scale(1) rotate(0deg);
   }
 
-  88% {
+  ${EXIT_STAGE_SETTLE_PERCENT} {
     opacity: 1;
-    transform: scale(0.84) rotate(360deg);
+    transform: scale(${STYLE_CONFIG.symbolSettleScale}) rotate(${STYLE_CONFIG.symbolSettleRotateDeg}deg);
   }
 
   100% {
     opacity: 0;
-    transform: scale(0.04) rotate(1180deg);
+    transform: scale(${STYLE_CONFIG.symbolEndScale}) rotate(${STYLE_CONFIG.symbolEndRotateDeg}deg);
   }
 }
 
 @keyframes tpwlIconRibbonExit {
   0%,
-  70% {
+  ${EXIT_FINAL_START_PERCENT} {
     opacity: 1;
     transform: rotate(0deg);
   }
 
-  90% {
-    opacity: 0.45;
-    transform: rotate(540deg);
+  ${EXIT_RIBBON_DIM_PERCENT} {
+    opacity: ${STYLE_CONFIG.ribbonDimOpacity};
+    transform: rotate(${STYLE_CONFIG.ribbonDimRotateDeg}deg);
   }
 
   100% {
     opacity: 0;
-    transform: rotate(900deg);
+    transform: rotate(${STYLE_CONFIG.ribbonEndRotateDeg}deg);
   }
 }
 
 @keyframes tpwlIconBaseExit {
   0%,
-  70% {
-    opacity: 0.58;
+  ${EXIT_FINAL_START_PERCENT} {
+    opacity: ${STYLE_CONFIG.baseExitOpacity};
     stroke-dasharray: 1;
   }
 
   100% {
     opacity: 0;
-    stroke-dasharray: 0.08 0.92;
+    stroke-dasharray: ${STYLE_CONFIG.exitDashFinal};
   }
 }
 
 @keyframes tpwlIconDistanceExit {
   0%,
-  70% {
+  ${EXIT_FINAL_START_PERCENT} {
     opacity: 1;
     stroke-dasharray: 1;
   }
 
   100% {
     opacity: 0;
-    stroke-dasharray: 0.08 0.92;
+    stroke-dasharray: ${STYLE_CONFIG.exitDashFinal};
   }
 }
 
 @keyframes tpwlIconGlowExit {
   0%,
-  70% {
-    opacity: 0.16;
+  ${EXIT_FINAL_START_PERCENT} {
+    opacity: ${STYLE_CONFIG.glowBreathOpacity};
     stroke-dasharray: 1;
   }
 
   100% {
     opacity: 0;
-    stroke-dasharray: 0.08 0.92;
+    stroke-dasharray: ${STYLE_CONFIG.exitDashFinal};
   }
 }
 
 @keyframes tpwlIconCircleExit {
   0%,
-  70% {
+  ${EXIT_FINAL_START_PERCENT} {
     opacity: 0;
-    transform: scale(0.3);
+    transform: scale(${STYLE_CONFIG.exitCircleStartScale});
   }
 
-  80% {
-    opacity: 0.86;
-    transform: scale(0.96);
+  ${EXIT_CIRCLE_POP_PERCENT} {
+    opacity: ${STYLE_CONFIG.exitCirclePopOpacity};
+    transform: scale(${STYLE_CONFIG.exitCirclePopScale});
   }
 
-  90% {
+  ${EXIT_CIRCLE_PEAK_PERCENT} {
     opacity: 1;
-    transform: scale(1);
+    transform: scale(${STYLE_CONFIG.exitCirclePeakScale});
   }
 
   100% {
     opacity: 0;
-    transform: scale(0.05);
+    transform: scale(${STYLE_CONFIG.exitCircleEndScale});
   }
 }
 
