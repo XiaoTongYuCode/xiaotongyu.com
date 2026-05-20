@@ -87,7 +87,7 @@ export default function Home() {
           </div>
         </div>
         <div className="heroMeta reveal">
-          <span>Based in Shanghai</span>
+          <span>Based in Beijing</span>
           <span>Product Engineering</span>
           <span>AI Experience Design</span>
         </div>

@@ -163,6 +163,13 @@ const loadingGateStyles = `
   animation: loadingGateCopyIn 520ms var(--loading-gate-ease-load) 780ms both;
 }
 
+.loadingGate__name {
+  max-width: min(520px, calc(100vw - 48px));
+  font-size: 16px;
+  font-weight: 650;
+  line-height: 1.32;
+}
+
 .loadingGate__line {
   max-width: min(260px, calc(100vw - 72px));
   color: rgba(5, 5, 5, 0.48);
@@ -216,7 +223,25 @@ const loadingGateStyles = `
   }
 
   .loadingGate__copy {
-    margin-top: 58px;
+    gap: 12px;
+    margin-top: 42px;
+  }
+
+  .loadingGate__name {
+    max-width: min(320px, calc(100vw - 56px));
+    font-size: 13px;
+    line-height: 1.4;
+  }
+
+  .loadingGate__line {
+    font-size: 10.5px;
+  }
+
+  .loadingGate__button {
+    min-height: 32px;
+    margin-top: 18px;
+    padding: 0 16px;
+    font-size: 10px;
   }
 }
 

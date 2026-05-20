@@ -936,18 +936,21 @@ section {
   }
 
   .hero {
-    min-height: 860px;
+    min-height: auto;
+    padding: 116px 24px 86px;
   }
 
   .heroCanvasMask {
-    inset: 92px 20px 44px;
-    border-radius: 28px;
+    inset: 82px 20px 30px;
+    border-radius: 18px;
   }
 
   .heroMeta {
-    left: 24px;
-    right: 24px;
-    bottom: 72px;
+    position: relative;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    margin-top: 42px;
     text-align: center;
   }
 
@@ -980,10 +983,12 @@ section {
 
   .capabilities {
     grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 40px 0 76px;
   }
 
   .capabilityCard {
-    min-height: 240px;
+    min-height: 210px;
   }
 
   .capabilityCard h3 {
@@ -1003,55 +1008,77 @@ section {
 }
 
 @media (max-width: 580px) {
+  body {
+    background:
+      radial-gradient(circle at 18% 8%, rgba(218, 211, 197, 0.34), transparent 54vw),
+      linear-gradient(135deg, rgba(255, 255, 255, 0.68), rgba(244, 241, 235, 0.44)),
+      var(--background);
+  }
+
+
   .siteHeader {
-    min-height: 58px;
-    padding: 9px 18px;
+    min-height: 54px;
+    padding: 7px 14px;
   }
 
   .brand {
-    width: 112px;
+    width: 78px;
   }
 
   .headerCta {
-    min-width: 104px;
-    min-height: 38px;
-    padding: 0 14px;
-    font-size: 11px;
+    min-width: 80px;
+    min-height: 32px;
+    padding: 0 9px;
+    font-size: 9.5px;
   }
 
   .hero {
-    min-height: 820px;
-    padding: 86px 18px 48px;
+    padding: 80px 18px 48px;
   }
 
   .heroCanvasMask {
-    inset: 92px 20px 28px;
+    inset: 72px 12px 18px;
+    border-radius: 16px;
+    border: none;
+  }
+
+  .hero::after {
+    right: 18px;
+    bottom: 26px;
+    width: 96px;
+    height: 96px;
   }
 
   .hero h1 {
-    font-size: clamp(44px, 15.2vw, 64px);
-    line-height: 0.96;
+    margin-top: 16px;
+    font-size: clamp(28px, 8.7vw, 34px);
+    line-height: 1.1;
   }
 
   .heroLead {
-    margin-top: 24px;
+    margin-top: 16px;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.56;
   }
 
   .heroActions {
     flex-direction: column;
-    gap: 10px;
-    margin-top: 26px;
+    gap: 9px;
+    margin-top: 22px;
   }
 
   .buttonPrimary,
   .buttonGhost {
     width: 100%;
-    min-height: 42px;
+    min-height: 38px;
+    font-size: 10px;
   }
 
   .heroMeta {
-    bottom: 54px;
-    gap: 8px;
+    margin-top: 26px;
+    gap: 6px;
+    font-size: 9.5px;
   }
 
   .sectionWrap,
@@ -1059,10 +1086,118 @@ section {
     width: calc(100% - 36px);
   }
 
+  .profile {
+    gap: 18px;
+    padding: 60px 0 42px;
+  }
+
+  .profileStatement h2,
+  .workHeader h2,
+  .contact h2,
+  .philosophy p {
+    font-size: clamp(22px, 6.9vw, 28px);
+    line-height: 1.12;
+  }
+
+  .profileStatement p {
+    margin-top: 16px;
+    font-size: 13px;
+    line-height: 1.62;
+  }
+
+  .capabilityCard {
+    min-height: 172px;
+    padding: 18px 16px 16px;
+  }
+
+  .capabilityCard h3 {
+    font-size: 18px;
+  }
+
+  .capabilityCard p {
+    margin-top: 10px;
+    font-size: 13px;
+  }
+
+  .work {
+    padding: 62px 0 68px;
+  }
+
+  .workHeader {
+    gap: 20px;
+    padding: 22px 0 24px;
+  }
+
+  .workHeader::after {
+    width: 26px;
+    height: 26px;
+  }
+
+  .workItem {
+    grid-template-columns: 32px minmax(0, 1fr);
+    gap: 12px;
+    min-height: 88px;
+    padding: 14px 13px;
+  }
+
+  .workItem h3 {
+    font-size: 18px;
+  }
+
+  .workItem p {
+    font-size: 11px;
+  }
+
+  .philosophy {
+    padding: 68px 0;
+  }
+
+  .contact {
+    padding: 68px 0 86px;
+  }
+
+  .contact h2 {
+    margin-top: 18px;
+  }
+
+  .contactLink {
+    width: 100%;
+    min-height: 44px;
+  }
+
   .footerInner {
     flex-direction: column;
     justify-content: center;
-    gap: 22px;
+    gap: 24px;
+    min-height: 126px;
+  }
+
+
+  .footer img {
+    width: 64px;
+    height: auto;
+  }
+
+
+  .footer nav {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 16px;
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .buttonPrimary:hover,
+  .headerCta:hover,
+  .buttonGhost:hover,
+  .capabilityCard:hover,
+  .workItem:hover {
+    transform: none;
+  }
+
+  .capabilityCard:hover::before,
+  .capabilityCard:hover::after {
+    opacity: 0;
   }
 }
 
