@@ -17,7 +17,7 @@ type LoadingGateProps = {
 };
 
 const DEFAULT_INTRO_DURATION_MS = 1280;
-const DEFAULT_EXIT_DURATION_MS = 2800;
+const DEFAULT_EXIT_DURATION_MS = 2000;
 const DEFAULT_REVEAL_DELAY_MS = 1000;
 
 export default function LoadingGate({

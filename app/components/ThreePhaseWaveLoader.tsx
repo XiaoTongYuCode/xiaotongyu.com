@@ -60,6 +60,13 @@ const MOTION_CONFIG = {
   exitMaxTrackSpeed: 0.2,
   exitMinWidthScale: 0.28,
   exitNarrowingRatio: 0.25,
+  // Fraction of max track speed at which the width starts narrowing. With
+  // value=1/3 the ribbon enters a "accelerating + narrowing" overlap state
+  // while the speed easeInQuint curve climbs through the back third of its
+  // acceleration window — instead of waiting until acceleration fully ends.
+  // 收窄起始触发的速度阈值（相对最高速度的占比）。1/3 表示当速度达到峰值的
+  // 1/3 时就开始同时收缩宽度，与剩余加速阶段重叠。
+  exitNarrowingSpeedTrigger: 1 / 3,
   exitStartTrackSpeed: 0.004,
   introTrackSpeed: 0.0024,
   waitingTrackSpeed: 0.0032,
@@ -67,9 +74,28 @@ const MOTION_CONFIG = {
 
 const EXIT_FINAL_RATIO =
   1 - MOTION_CONFIG.exitAccelerationRatio - MOTION_CONFIG.exitNarrowingRatio;
-const EXIT_NARROWING_START_RATIO = MOTION_CONFIG.exitAccelerationRatio;
 const EXIT_FINAL_START_RATIO =
   MOTION_CONFIG.exitAccelerationRatio + MOTION_CONFIG.exitNarrowingRatio;
+
+// Invert easeInQuint to find the timeline ratio at which the easeInQuint-driven
+// speed lerp first crosses `exitNarrowingSpeedTrigger * exitMaxTrackSpeed`.
+// 反解 easeInQuint：求出速度首次达到 trigger * 最高速度 时所对应的归一化时间，
+// 再换算到整段退出动画的相对位置，作为宽度收缩的起点。
+const EXIT_NARROWING_SPEED_FRACTION = Math.min(
+  1,
+  Math.max(
+    0,
+    (MOTION_CONFIG.exitMaxTrackSpeed * MOTION_CONFIG.exitNarrowingSpeedTrigger -
+      MOTION_CONFIG.exitStartTrackSpeed) /
+      (MOTION_CONFIG.exitMaxTrackSpeed - MOTION_CONFIG.exitStartTrackSpeed),
+  ),
+);
+const EXIT_NARROWING_START_RATIO =
+  MOTION_CONFIG.exitAccelerationRatio * Math.pow(EXIT_NARROWING_SPEED_FRACTION, 1 / 5);
+const EXIT_NARROWING_SPAN_RATIO = Math.max(
+  EXIT_FINAL_START_RATIO - EXIT_NARROWING_START_RATIO,
+  Number.EPSILON,
+);
 
 // Keyframe checkpoints inside the final phase. / 最终阶段内部关键帧位置。
 const EXIT_KEYFRAME_CONFIG = {
@@ -212,13 +238,12 @@ const renderGradientStops = (stops: GradientStopConfig[]) =>
     />
   ));
 
-const pointsToSmoothPath = (points: TrackPoint[]) => {
-  const firstPoint = points[0];
-
-  return `M${toPathCoordinate(firstPoint.x)} ${toPathCoordinate(firstPoint.y)}${pointsToSmoothPathSegments(points)}`;
-};
-
-const pointsToSmoothPathSegments = (points: TrackPoint[]) => {
+// Catmull-Rom-style smooth bezier segments. The first/last neighbors are clamped, so
+// the start and end tangents point inward — this gives a pointed (V) corner when two
+// rails meet at a seam, which is the desired wave-tip silhouette.
+// Catmull-Rom 风格贝塞尔片段：端点邻居被自钳制，使首尾切线指向内侧。两段轨道在接缝
+// 处相交时会形成尖角顶点（再由 stroke-linejoin: round 自然磨成圆角），即设计中的波尖。
+const railSegments = (points: TrackPoint[]) => {
   let path = "";
 
   for (let index = 0; index < points.length - 1; index += 1) {
@@ -292,6 +317,9 @@ const buildWaveTrackPath = (phase = 0, options: WaveTrackOptions = {}) => {
     };
   };
 
+  // Both rails include their shared seam endpoints (18,36) and (142,36). Each rail's
+  // own clamped tangent at the seam keeps the path pointed at the wave tips.
+  // 上下轨各自保留共享端点 (18,36)/(142,36)，靠各自的端点钳制切线在接缝处形成尖角顶点。
   const upperRail = Array.from({ length: segmentCount + 1 }, (_, index) => {
     const progress = index / segmentCount;
 
@@ -303,7 +331,13 @@ const buildWaveTrackPath = (phase = 0, options: WaveTrackOptions = {}) => {
     return buildRailPoint(progress, WAVE_TRACK_CONFIG.halfWavelengthOffset, "lower");
   });
 
-  return `${pointsToSmoothPath(upperRail)} L${toPathCoordinate(lowerRail[0].x)} ${toPathCoordinate(lowerRail[0].y)}${pointsToSmoothPathSegments(lowerRail)} L${toPathCoordinate(upperRail[0].x)} ${toPathCoordinate(upperRail[0].y)} Z`;
+  // Single continuous closed path: start at the left tip, trace the upper rail to the
+  // right tip, then trace the lower rail back. No degenerate L commands — those would
+  // produce stray round caps that look like a gap at the seam.
+  // 用一条连续闭合路径：从左尖端出发→上轨→右尖端→下轨→闭合。删除原先零长度的 L
+  // 命令——它们会在接缝处被渲染成孤立的 round-cap，看上去就像缺口。
+  const upperStart = upperRail[0];
+  return `M${toPathCoordinate(upperStart.x)} ${toPathCoordinate(upperStart.y)}${railSegments(upperRail)}${railSegments(lowerRail)} Z`;
 };
 
 const initialTrackPath = buildWaveTrackPath();
@@ -368,7 +402,7 @@ export default function ThreePhaseWaveLoader({
             ? MOTION_CONFIG.waitingTrackSpeed
             : MOTION_CONFIG.introTrackSpeed;
       const narrowProgress = easeOutCubic(
-        clamp((exitProgress - EXIT_NARROWING_START_RATIO) / MOTION_CONFIG.exitNarrowingRatio),
+        clamp((exitProgress - EXIT_NARROWING_START_RATIO) / EXIT_NARROWING_SPAN_RATIO),
       );
       const widthScale =
         phase === "exiting" ? lerp(1, MOTION_CONFIG.exitMinWidthScale, narrowProgress) : 1;
@@ -594,7 +628,20 @@ const loaderIconStyles = `
   animation: tpwlIconMarkIntro ${STYLE_CONFIG.introDurationMs}ms var(--tpwl-ease-load) both;
 }
 
+/*
+ * In the waiting/idle state, remove stroke-dasharray entirely. A closed path with
+ * dasharray is rendered as a dash pattern with explicit start/end caps (linecap=round)
+ * at the M point, producing a visible wedge between the two caps when the seam has a
+ * sharp tangent angle. Switching to dasharray:none restores the closed-loop semantics
+ * so the seam is rendered with stroke-linejoin (round) and joins cleanly.
+ *
+ * waiting/idle 状态下完全去掉 stroke-dasharray：闭合路径只要带 dasharray，浏览器就会把
+ * 它当成"虚线"渲染，在 M 起止点用 linecap (圆头帽) 而不是 linejoin (圆角拐角) 收口，
+ * 切线方向不一致时两个帽之间会留下楔形缺口。改为 dasharray:none 之后路径恢复闭合环
+ * 语义，接缝由 stroke-linejoin:round 平滑闭合。
+ */
 .tpwlIcon--waiting .tpwlIcon__base {
+  stroke-dasharray: none;
   stroke-dashoffset: 0;
   animation:
     tpwlIconPathToBreath ${STYLE_CONFIG.waitingTransitionMs}ms ease-out both,
@@ -602,6 +649,7 @@ const loaderIconStyles = `
 }
 
 .tpwlIcon--waiting .tpwlIcon__distance {
+  stroke-dasharray: none;
   stroke-dashoffset: 0;
   animation:
     tpwlIconDistanceToBreath ${STYLE_CONFIG.waitingTransitionMs}ms ease-out both,
@@ -609,6 +657,7 @@ const loaderIconStyles = `
 }
 
 .tpwlIcon--waiting .tpwlIcon__glow {
+  stroke-dasharray: none;
   stroke-dashoffset: 0;
   animation:
     tpwlIconGlowToBreath ${STYLE_CONFIG.waitingTransitionMs}ms ease-out both,
@@ -870,11 +919,23 @@ const loaderIconStyles = `
   }
 }
 
+/*
+ * Same reason as waiting state: during the early/middle of exit the path must stay a
+ * continuous closed loop (no stroke-dasharray) so the M point uses linejoin, not the
+ * cap-on-cap wedge. Only the final dotted-dissolve segment needs a numeric dasharray;
+ * since "none" → numeric isn't smoothly interpolatable, the browser snaps at the
+ * boundary — and that snap is concealed by the simultaneous opacity fade + circle
+ * morph happening in the final 15%.
+ *
+ * 与 waiting 同因：退出前 85% 必须维持闭合环 (dasharray:none) 以避免 M 点 cap 楔形
+ * 缺口；最后 15% 再切到虚线 dash 收尾。"none" 与数值之间无法平滑插值，浏览器会在该
+ * 边界 snap，恰好被同时进行的不透明度淡出与圆形 morph 掩盖。
+ */
 @keyframes tpwlIconBaseExit {
   0%,
   ${EXIT_FINAL_START_PERCENT} {
     opacity: ${STYLE_CONFIG.baseExitOpacity};
-    stroke-dasharray: 1;
+    stroke-dasharray: none;
   }
 
   100% {
@@ -887,7 +948,7 @@ const loaderIconStyles = `
   0%,
   ${EXIT_FINAL_START_PERCENT} {
     opacity: 1;
-    stroke-dasharray: 1;
+    stroke-dasharray: none;
   }
 
   100% {
@@ -900,7 +961,7 @@ const loaderIconStyles = `
   0%,
   ${EXIT_FINAL_START_PERCENT} {
     opacity: ${STYLE_CONFIG.glowBreathOpacity};
-    stroke-dasharray: 1;
+    stroke-dasharray: none;
   }
 
   100% {
