@@ -8,10 +8,10 @@ type ArtStoryViewerProps = {
   images: readonly ArtStoryImage[];
 };
 
-const WHEEL_STEP_THRESHOLD = 260;
-const WHEEL_COOLDOWN_MS = 520;
-const WHEEL_IDLE_RESET_MS = 180;
-const TOUCH_STEP_THRESHOLD = 86;
+const WHEEL_STEP_THRESHOLD = 150;
+const WHEEL_COOLDOWN_MS = 360;
+const WHEEL_IDLE_RESET_MS = 140;
+const TOUCH_STEP_THRESHOLD = 48;
 const FRAME_FADE_MS = 520;
 
 export default function ArtStoryViewer({ images }: ArtStoryViewerProps) {
@@ -24,10 +24,11 @@ export default function ArtStoryViewer({ images }: ArtStoryViewerProps) {
   const wheelIdleTimerRef = useRef<number | null>(null);
   const wheelLockedUntilRef = useRef(0);
   const touchHandledRef = useRef(false);
-  const touchStartYRef = useRef<number | null>(null);
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const totalImages = images.length;
   const activeImage = images[activeIndex];
   const previousImage = previousIndex !== null ? images[previousIndex] : null;
+  const hasReachedLastFrame = activeIndex === totalImages - 1;
 
   const clearPreviousFrame = useCallback(() => {
     if (previousFrameTimerRef.current !== null) {
@@ -61,6 +62,58 @@ export default function ArtStoryViewer({ images }: ArtStoryViewerProps) {
   useEffect(() => {
     activeIndexRef.current = activeIndex;
   }, [activeIndex]);
+
+  useEffect(() => {
+    if (activeIndex < totalImages - 1 && window.scrollY > 0) {
+      window.scrollTo({ left: 0, top: 0 });
+    }
+  }, [activeIndex, totalImages]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (activeIndexRef.current < totalImages - 1 && window.scrollY > 0) {
+        window.scrollTo({ left: 0, top: 0 });
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, [totalImages]);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (
+        event.altKey ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.shiftKey ||
+        !["ArrowDown", "ArrowRight", "ArrowUp", "ArrowLeft"].includes(event.key)
+      ) {
+        return;
+      }
+
+      const direction = event.key === "ArrowDown" || event.key === "ArrowRight" ? 1 : -1;
+      const currentIndex = activeIndexRef.current;
+      const atFirstFrame = currentIndex === 0;
+      const atLastFrame = currentIndex === totalImages - 1;
+
+      if ((direction < 0 && atFirstFrame) || (direction > 0 && atLastFrame)) {
+        return;
+      }
+
+      event.preventDefault();
+      stepFrame(direction);
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [stepFrame, totalImages]);
 
   useEffect(() => {
     return () => {
@@ -139,30 +192,33 @@ export default function ArtStoryViewer({ images }: ArtStoryViewerProps) {
     }
 
     const resetTouch = () => {
-      touchStartYRef.current = null;
+      touchStartRef.current = null;
       touchHandledRef.current = false;
     };
 
     const handleTouchStart = (event: TouchEvent) => {
-      touchStartYRef.current = event.touches[0]?.clientY ?? null;
+      const touch = event.touches[0];
+      touchStartRef.current = touch ? { x: touch.clientX, y: touch.clientY } : null;
       touchHandledRef.current = false;
     };
 
     const handleTouchMove = (event: TouchEvent) => {
-      const touchStartY = touchStartYRef.current;
-      const touchY = event.touches[0]?.clientY;
+      const touchStart = touchStartRef.current;
+      const touch = event.touches[0];
 
-      if (touchStartY === null || typeof touchY !== "number") {
+      if (!touchStart || !touch) {
         return;
       }
 
-      const deltaY = touchStartY - touchY;
+      const deltaX = touchStart.x - touch.clientX;
+      const deltaY = touchStart.y - touch.clientY;
+      const dominantDelta = Math.abs(deltaX) > Math.abs(deltaY) ? deltaX : deltaY;
 
-      if (Math.abs(deltaY) < TOUCH_STEP_THRESHOLD) {
+      if (Math.hypot(deltaX, deltaY) < TOUCH_STEP_THRESHOLD) {
         return;
       }
 
-      const direction = deltaY > 0 ? 1 : -1;
+      const direction = dominantDelta > 0 ? 1 : -1;
       const currentIndex = activeIndexRef.current;
       const atFirstFrame = currentIndex === 0;
       const atLastFrame = currentIndex === totalImages - 1;
@@ -195,35 +251,42 @@ export default function ArtStoryViewer({ images }: ArtStoryViewerProps) {
   }, [stepFrame, totalImages]);
 
   return (
-    <section
-      className="artViewer"
-      ref={viewerRef}
-      aria-label="圆涟畸漪故事连载"
-    >
-      <div className="artViewer__stage">
-        {previousImage ? (
+    <>
+      <section
+        className="artViewer"
+        ref={viewerRef}
+        aria-label="圆涟畸漪故事连载"
+      >
+        <div className="artViewer__stage">
+          {previousImage ? (
+            <img
+              className="artViewer__image artViewer__image--previous"
+              src={previousImage.src}
+              width={previousImage.width}
+              height={previousImage.height}
+              alt=""
+              aria-hidden="true"
+            />
+          ) : null}
           <img
-            className="artViewer__image artViewer__image--previous"
-            src={previousImage.src}
-            width={previousImage.width}
-            height={previousImage.height}
-            alt=""
-            aria-hidden="true"
+            className="artViewer__image artViewer__image--active"
+            key={activeImage.src}
+            src={activeImage.src}
+            width={activeImage.width}
+            height={activeImage.height}
+            alt={activeImage.alt}
           />
-        ) : null}
-        <img
-          className="artViewer__image artViewer__image--active"
-          key={activeImage.src}
-          src={activeImage.src}
-          width={activeImage.width}
-          height={activeImage.height}
-          alt={activeImage.alt}
-        />
-      </div>
-      <div className="artViewer__counter" aria-live="polite">
-        <span>{String(activeIndex + 1).padStart(2, "0")}</span>
-        <span>{String(totalImages).padStart(2, "0")}</span>
-      </div>
-    </section>
+        </div>
+        <div className="artViewer__counter" aria-live="polite">
+          <span>{String(activeIndex + 1).padStart(2, "0")}</span>
+          <span>{String(totalImages).padStart(2, "0")}</span>
+        </div>
+      </section>
+      {hasReachedLastFrame ? (
+        <section className="artSignature" aria-label="署名">
+          <p>圆涟畸漪</p>
+        </section>
+      ) : null}
+    </>
   );
 }

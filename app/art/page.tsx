@@ -21,9 +21,6 @@ export default function ArtPage() {
         title="Please view in landscape for the best experience"
       />
       <ArtStoryViewer images={ART_STORY_IMAGES} />
-      <section className="artSignature" aria-label="署名">
-        <p>圆涟畸漪</p>
-      </section>
     </main>
   );
 }

@@ -51,7 +51,7 @@ main {
 }
 
 .artPage {
-  min-height: 200svh;
+  min-height: 100svh;
   overflow: visible;
   background: #fff;
   color: #050505;
