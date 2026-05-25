@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 
-import LoadingGate from "../components/LoadingGate";
-import ArtStoryViewer from "./ArtStoryViewer";
+import ArtPageClient from "./ArtPageClient";
 import { ART_STORY_IMAGES, ART_STORY_PRELOAD_URLS } from "./storyImages";
 
 export const metadata: Metadata = {
@@ -12,15 +11,7 @@ export const metadata: Metadata = {
 export default function ArtPage() {
   return (
     <main className="artPage">
-      <LoadingGate
-        buttonLabel="进入连载"
-        description="A short artwork series from @圆涟畸漪"
-        loadingButtonLabel="预载中"
-        preloadUrls={ART_STORY_PRELOAD_URLS}
-        revealDelayMs={620}
-        title="Please view in landscape for the best experience"
-      />
-      <ArtStoryViewer images={ART_STORY_IMAGES} />
+      <ArtPageClient images={ART_STORY_IMAGES} preloadUrls={ART_STORY_PRELOAD_URLS} />
     </main>
   );
 }

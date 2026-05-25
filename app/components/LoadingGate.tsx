@@ -16,6 +16,7 @@ type LoadingGateProps = {
   loadingButtonLabel?: string;
   lockBodyScroll?: boolean;
   onComplete?: () => void;
+  onEnter?: () => void;
   preloadUrls?: readonly string[];
   revealDelayMs?: number;
   title?: string;
@@ -35,6 +36,7 @@ export default function LoadingGate({
   loadingButtonLabel = "Loading",
   lockBodyScroll = true,
   onComplete,
+  onEnter,
   preloadUrls = EMPTY_PRELOAD_URLS,
   revealDelayMs = DEFAULT_REVEAL_DELAY_MS,
   title = "Keep up and be committed to the next AI era",
@@ -159,6 +161,7 @@ export default function LoadingGate({
     }
 
     setPhase("exiting");
+    onEnter?.();
     exitTimerRef.current = window.setTimeout(() => {
       setPhase("done");
     }, exitDurationMs + revealDelayMs);
@@ -275,6 +278,7 @@ const loadingGateStyles = `
   font-size: 16px;
   font-weight: 650;
   line-height: 1.32;
+  white-space: nowrap;
 }
 
 .loadingGate__name--progress {
