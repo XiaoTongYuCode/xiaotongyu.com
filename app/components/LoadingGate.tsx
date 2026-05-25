@@ -189,20 +189,29 @@ export default function LoadingGate({
           title={iconTitle}
         />
         <div className="loadingGate__copy">
-          {hasPreloadProgress ? (
-            <div
-              className="loadingGate__progress"
-              style={{ "--loading-gate-progress": preloadProgress } as CSSProperties}
-              aria-label={`Loading assets ${preloadProgressPercent}%`}
-              role="progressbar"
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-valuenow={preloadProgressPercent}
-            >
-              <span />
-            </div>
-          ) : null}
-          <span className="loadingGate__name">{title}</span>
+          <span
+            className={[
+              "loadingGate__name",
+              hasPreloadProgress ? "loadingGate__name--progress" : "",
+            ].join(" ")}
+            style={
+              hasPreloadProgress
+                ? ({ "--loading-gate-progress": preloadProgress } as CSSProperties)
+                : undefined
+            }
+          >
+            {title}
+            {hasPreloadProgress ? (
+              <span
+                className="loadingGate__progressA11y"
+                aria-label={`Loading assets ${preloadProgressPercent}%`}
+                role="progressbar"
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={preloadProgressPercent}
+              />
+            ) : null}
+          </span>
           <span className="loadingGate__line">
             {description}
           </span>
@@ -261,10 +270,36 @@ const loadingGateStyles = `
 }
 
 .loadingGate__name {
+  position: relative;
   max-width: min(520px, calc(100vw - 48px));
   font-size: 16px;
   font-weight: 650;
   line-height: 1.32;
+}
+
+.loadingGate__name--progress {
+  padding-bottom: 9px;
+}
+
+.loadingGate__name--progress::before,
+.loadingGate__name--progress::after {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 2px;
+  content: "";
+}
+
+.loadingGate__name--progress::before {
+  background: rgba(5, 5, 5, 0.12);
+}
+
+.loadingGate__name--progress::after {
+  background: #050505;
+  transform: scaleX(var(--loading-gate-progress));
+  transform-origin: 0 50%;
+  transition: transform 180ms var(--loading-gate-ease-load);
 }
 
 .loadingGate__line {
@@ -275,22 +310,13 @@ const loadingGateStyles = `
   line-height: 1.35;
 }
 
-.loadingGate__progress {
-  position: relative;
-  width: min(212px, calc(100vw - 112px));
-  height: 2px;
-  overflow: hidden;
-  background: rgba(5, 5, 5, 0.12);
-}
-
-.loadingGate__progress span {
+.loadingGate__progressA11y {
   position: absolute;
-  inset: 0;
-  display: block;
-  background: #050505;
-  transform: scaleX(var(--loading-gate-progress));
-  transform-origin: 0 50%;
-  transition: transform 180ms var(--loading-gate-ease-load);
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 
 .loadingGate__button {

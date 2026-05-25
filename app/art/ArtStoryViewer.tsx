@@ -23,6 +23,7 @@ export default function ArtStoryViewer({ images }: ArtStoryViewerProps) {
   const wheelDeltaRef = useRef(0);
   const wheelIdleTimerRef = useRef<number | null>(null);
   const wheelLockedUntilRef = useRef(0);
+  const touchHandledRef = useRef(false);
   const touchStartYRef = useRef<number | null>(null);
   const totalImages = images.length;
   const activeImage = images[activeIndex];
@@ -130,34 +131,73 @@ export default function ArtStoryViewer({ images }: ArtStoryViewerProps) {
     };
   }, [stepFrame, totalImages]);
 
-  const handleTouchStart = (event: React.TouchEvent<HTMLElement>) => {
-    touchStartYRef.current = event.touches[0]?.clientY ?? null;
-  };
+  useEffect(() => {
+    const viewer = viewerRef.current;
 
-  const handleTouchEnd = (event: React.TouchEvent<HTMLElement>) => {
-    const touchStartY = touchStartYRef.current;
-    const touchEndY = event.changedTouches[0]?.clientY;
-    touchStartYRef.current = null;
-
-    if (touchStartY === null || typeof touchEndY !== "number") {
-      return;
+    if (!viewer) {
+      return undefined;
     }
 
-    const deltaY = touchStartY - touchEndY;
+    const resetTouch = () => {
+      touchStartYRef.current = null;
+      touchHandledRef.current = false;
+    };
 
-    if (Math.abs(deltaY) < TOUCH_STEP_THRESHOLD) {
-      return;
-    }
+    const handleTouchStart = (event: TouchEvent) => {
+      touchStartYRef.current = event.touches[0]?.clientY ?? null;
+      touchHandledRef.current = false;
+    };
 
-    stepFrame(deltaY > 0 ? 1 : -1);
-  };
+    const handleTouchMove = (event: TouchEvent) => {
+      const touchStartY = touchStartYRef.current;
+      const touchY = event.touches[0]?.clientY;
+
+      if (touchStartY === null || typeof touchY !== "number") {
+        return;
+      }
+
+      const deltaY = touchStartY - touchY;
+
+      if (Math.abs(deltaY) < TOUCH_STEP_THRESHOLD) {
+        return;
+      }
+
+      const direction = deltaY > 0 ? 1 : -1;
+      const currentIndex = activeIndexRef.current;
+      const atFirstFrame = currentIndex === 0;
+      const atLastFrame = currentIndex === totalImages - 1;
+
+      if ((direction < 0 && atFirstFrame) || (direction > 0 && atLastFrame)) {
+        resetTouch();
+        return;
+      }
+
+      event.preventDefault();
+
+      if (touchHandledRef.current) {
+        return;
+      }
+
+      touchHandledRef.current = stepFrame(direction);
+    };
+
+    viewer.addEventListener("touchstart", handleTouchStart, { passive: true });
+    viewer.addEventListener("touchmove", handleTouchMove, { passive: false });
+    viewer.addEventListener("touchend", resetTouch);
+    viewer.addEventListener("touchcancel", resetTouch);
+
+    return () => {
+      viewer.removeEventListener("touchstart", handleTouchStart);
+      viewer.removeEventListener("touchmove", handleTouchMove);
+      viewer.removeEventListener("touchend", resetTouch);
+      viewer.removeEventListener("touchcancel", resetTouch);
+    };
+  }, [stepFrame, totalImages]);
 
   return (
     <section
       className="artViewer"
       ref={viewerRef}
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
       aria-label="圆涟畸漪故事连载"
     >
       <div className="artViewer__stage">

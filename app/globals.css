@@ -63,6 +63,8 @@ main {
 }
 
 .artViewer {
+  --art-viewer-padding-x: clamp(18px, 4vw, 44px);
+  --art-viewer-padding-y: clamp(18px, 3svh, 36px);
   position: relative;
   display: grid;
   min-height: 100svh;
@@ -77,6 +79,7 @@ main {
   display: grid;
   width: 100vw;
   height: 100svh;
+  padding: var(--art-viewer-padding-y) var(--art-viewer-padding-x);
   place-items: center;
   overflow: hidden;
   background: #fff;
@@ -85,8 +88,14 @@ main {
 .artViewer__image {
   grid-area: 1 / 1;
   display: block;
-  max-width: min(100vw, calc((100svh - 32px) * 1.6));
-  max-height: min(100svh, calc((100vw - 32px) / 1.6));
+  max-width: min(
+    calc(100vw - var(--art-viewer-padding-x) * 2),
+    calc((100svh - var(--art-viewer-padding-y) * 2) * 1.6)
+  );
+  max-height: min(
+    calc(100svh - var(--art-viewer-padding-y) * 2),
+    calc((100vw - var(--art-viewer-padding-x) * 2) / 1.6)
+  );
   width: auto;
   height: auto;
   object-fit: contain;
