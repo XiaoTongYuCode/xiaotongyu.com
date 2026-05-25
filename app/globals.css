@@ -50,6 +50,103 @@ main {
   overflow: hidden;
 }
 
+.artPage {
+  min-height: 200svh;
+  overflow: visible;
+  background: #fff;
+  color: #050505;
+  cursor: auto;
+}
+
+.artPage * {
+  cursor: auto;
+}
+
+.artViewer {
+  position: relative;
+  display: grid;
+  min-height: 100svh;
+  place-items: center;
+  overflow: hidden;
+  background: #fff;
+  touch-action: pan-y;
+}
+
+.artViewer__stage {
+  position: relative;
+  display: grid;
+  width: 100vw;
+  height: 100svh;
+  place-items: center;
+  overflow: hidden;
+  background: #fff;
+}
+
+.artViewer__image {
+  grid-area: 1 / 1;
+  display: block;
+  max-width: min(100vw, calc((100svh - 32px) * 1.6));
+  max-height: min(100svh, calc((100vw - 32px) / 1.6));
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  object-position: center;
+  pointer-events: none;
+  user-select: none;
+}
+
+.artViewer__image--active {
+  z-index: 2;
+  animation: artFrameFadeIn 520ms var(--ease-scroll) both;
+}
+
+.artViewer__image--previous {
+  z-index: 1;
+  opacity: 0;
+  animation: artFrameFadeOut 520ms var(--ease-scroll) both;
+}
+
+.artViewer__counter {
+  position: absolute;
+  right: clamp(18px, 3vw, 44px);
+  bottom: clamp(16px, 3vw, 36px);
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: rgba(5, 5, 5, 0.42);
+  font-family:
+    "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.artViewer__counter span:first-child {
+  color: rgba(5, 5, 5, 0.72);
+}
+
+.artViewer__counter span + span::before {
+  margin-right: 9px;
+  color: rgba(5, 5, 5, 0.24);
+  content: "/";
+}
+
+.artSignature {
+  display: grid;
+  min-height: 100svh;
+  place-items: center;
+  background: #fff;
+}
+
+.artSignature p {
+  margin: 0;
+  color: rgba(5, 5, 5, 0.54);
+  font-size: clamp(12px, 1.2vw, 15px);
+  font-weight: 540;
+  letter-spacing: 0.16em;
+}
+
 section {
   scroll-margin-top: 112px;
 }
@@ -913,6 +1010,26 @@ section {
   to {
     opacity: 1;
     filter: blur(0);
+  }
+}
+
+@keyframes artFrameFadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes artFrameFadeOut {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
   }
 }
 

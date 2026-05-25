@@ -9,28 +9,49 @@ type LoadingGatePhase = ThreePhaseWaveLoaderPhase | "done";
 
 type LoadingGateProps = {
   buttonLabel?: string;
+  description?: string;
   exitDurationMs?: number;
+  iconTitle?: string;
   introDurationMs?: number;
+  loadingButtonLabel?: string;
   lockBodyScroll?: boolean;
   onComplete?: () => void;
+  preloadUrls?: readonly string[];
   revealDelayMs?: number;
+  title?: string;
 };
 
 const DEFAULT_INTRO_DURATION_MS = 1280;
 const DEFAULT_EXIT_DURATION_MS = 2000;
 const DEFAULT_REVEAL_DELAY_MS = 1000;
+const EMPTY_PRELOAD_URLS: readonly string[] = [];
 
 export default function LoadingGate({
   buttonLabel = "Enter site",
+  description = "Focus on Game / Web / APP",
   exitDurationMs = DEFAULT_EXIT_DURATION_MS,
+  iconTitle = "Loading",
   introDurationMs = DEFAULT_INTRO_DURATION_MS,
+  loadingButtonLabel = "Loading",
   lockBodyScroll = true,
   onComplete,
+  preloadUrls = EMPTY_PRELOAD_URLS,
   revealDelayMs = DEFAULT_REVEAL_DELAY_MS,
+  title = "Keep up and be committed to the next AI era",
 }: LoadingGateProps) {
   const [phase, setPhase] = useState<LoadingGatePhase>("intro");
+  const [preloadComplete, setPreloadComplete] = useState(preloadUrls.length === 0);
+  const [preloadLoadedCount, setPreloadLoadedCount] = useState(0);
   const exitTimerRef = useRef<number | null>(null);
   const previousBodyOverflowRef = useRef<string | null>(null);
+  const preloadTotal = preloadUrls.length;
+  const preloadProgress = preloadTotal > 0 ? preloadLoadedCount / preloadTotal : 1;
+  const preloadProgressPercent = Math.round(preloadProgress * 100);
+  const hasPreloadProgress = preloadTotal > 0;
+  const canEnter = phase === "waiting" && preloadComplete;
+  const resolvedButtonLabel = preloadComplete
+    ? buttonLabel
+    : `${loadingButtonLabel} ${preloadProgressPercent}%`;
 
   useEffect(() => {
     if (!lockBodyScroll) {
@@ -69,6 +90,60 @@ export default function LoadingGate({
   }, [introDurationMs]);
 
   useEffect(() => {
+    if (preloadUrls.length === 0) {
+      setPreloadLoadedCount(0);
+      setPreloadComplete(true);
+      return undefined;
+    }
+
+    const uniqueUrls = Array.from(new Set(preloadUrls));
+    let settledCount = 0;
+    let cancelled = false;
+
+    setPreloadLoadedCount(0);
+    setPreloadComplete(false);
+
+    const markSettled = () => {
+      if (cancelled) {
+        return;
+      }
+
+      settledCount += 1;
+      setPreloadLoadedCount(settledCount);
+
+      if (settledCount >= uniqueUrls.length) {
+        setPreloadComplete(true);
+      }
+    };
+
+    uniqueUrls.forEach((url) => {
+      const image = new Image();
+      let settled = false;
+      const settleOnce = () => {
+        if (settled) {
+          return;
+        }
+
+        settled = true;
+        markSettled();
+      };
+
+      image.decoding = "async";
+      image.onload = settleOnce;
+      image.onerror = settleOnce;
+      image.src = url;
+
+      if (image.complete) {
+        settleOnce();
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [preloadUrls]);
+
+  useEffect(() => {
     if (phase === "done") {
       onComplete?.();
     }
@@ -76,6 +151,10 @@ export default function LoadingGate({
 
   const enterSite = () => {
     if (phase === "exiting" || phase === "done") {
+      return;
+    }
+
+    if (!canEnter) {
       return;
     }
 
@@ -107,16 +186,34 @@ export default function LoadingGate({
           className="loadingGate__icon"
           exitDurationMs={exitDurationMs}
           phase={phase}
-          title="Loading"
+          title={iconTitle}
         />
         <div className="loadingGate__copy">
-          <span className="loadingGate__name">Keep up and be committed to the next AI era</span>
+          {hasPreloadProgress ? (
+            <div
+              className="loadingGate__progress"
+              style={{ "--loading-gate-progress": preloadProgress } as CSSProperties}
+              aria-label={`Loading assets ${preloadProgressPercent}%`}
+              role="progressbar"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={preloadProgressPercent}
+            >
+              <span />
+            </div>
+          ) : null}
+          <span className="loadingGate__name">{title}</span>
           <span className="loadingGate__line">
-            Focus on Game / Web / APP
+            {description}
           </span>
         </div>
-        <button className="loadingGate__button" type="button" onClick={enterSite}>
-          {buttonLabel}
+        <button
+          className="loadingGate__button"
+          type="button"
+          onClick={enterSite}
+          disabled={!canEnter}
+        >
+          {resolvedButtonLabel}
         </button>
       </div>
     </div>
@@ -178,6 +275,24 @@ const loadingGateStyles = `
   line-height: 1.35;
 }
 
+.loadingGate__progress {
+  position: relative;
+  width: min(212px, calc(100vw - 112px));
+  height: 2px;
+  overflow: hidden;
+  background: rgba(5, 5, 5, 0.12);
+}
+
+.loadingGate__progress span {
+  position: absolute;
+  inset: 0;
+  display: block;
+  background: #050505;
+  transform: scaleX(var(--loading-gate-progress));
+  transform-origin: 0 50%;
+  transition: transform 180ms var(--loading-gate-ease-load);
+}
+
 .loadingGate__button {
   min-height: 24px;
   margin-top: 24px;
@@ -201,10 +316,21 @@ const loadingGateStyles = `
   animation: loadingGateButtonIn 520ms var(--loading-gate-ease-load) 920ms both;
 }
 
+.loadingGate__button:disabled {
+  color: rgba(5, 5, 5, 0.36);
+  cursor: default;
+}
+
 .loadingGate__button:hover {
   background: #272727;
   color: #fff;
   transform: translateY(6px);
+}
+
+.loadingGate__button:disabled:hover {
+  background: transparent;
+  color: rgba(5, 5, 5, 0.36);
+  transform: translateY(0);
 }
 
 .loadingGate__button:focus-visible {
