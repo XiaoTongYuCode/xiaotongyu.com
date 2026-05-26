@@ -287,6 +287,33 @@
   line-height: 1.7;
 }
 
+.resultStats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.resultStats span {
+  padding: 10px;
+  border: 1px solid rgba(22, 20, 17, 0.1);
+  border-radius: 15px;
+  background: rgba(255, 255, 255, 0.52);
+  color: rgba(22, 20, 17, 0.5);
+  font-size: 9.5px;
+  font-weight: 850;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.resultStats strong {
+  display: block;
+  margin-top: 4px;
+  color: #161411;
+  font-size: 16px;
+  letter-spacing: -0.02em;
+}
+
 .modalActions {
   display: flex;
   flex-wrap: wrap;
@@ -375,6 +402,10 @@
   .boostMeter {
     grid-template-columns: 1fr;
     gap: 7px;
+  }
+
+  .resultStats {
+    grid-template-columns: 1fr;
   }
 }
 

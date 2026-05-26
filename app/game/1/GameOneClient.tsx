@@ -889,6 +889,17 @@ export default function GameOneClient() {
                 ? "You handled jumps, magnet coins, rocket flight, and moving obstacles. Send the same energy to product engineering."
                 : "Collect rockets earlier, hold thrust through dense coin arcs, and keep three hearts alive."}
             </p>
+            <div className={styles.resultStats} aria-label="Run result">
+              <span>
+                Final score <strong>{hud.score.toLocaleString()}</strong>
+              </span>
+              <span>
+                Best <strong>{hud.bestScore.toLocaleString()}</strong>
+              </span>
+              <span>
+                Lives <strong>{hud.lives}</strong>
+              </span>
+            </div>
             <div className={styles.modalActions}>
               <button type="button" onClick={begin}>
                 Play again
