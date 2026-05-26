@@ -89,7 +89,7 @@ const HEIGHT = 540;
 const GROUND_Y = 414;
 const PLAYER_RADIUS = 28;
 const TARGET_SCORE = 10000;
-const STORAGE_KEY = "hit-10k-best-score";
+const STORAGE_KEY = "hit-10k-game-1-best-score";
 
 const INITIAL_HUD: HudState = {
   phase: "ready",
@@ -131,6 +131,17 @@ function createStore(bestScore = 0): GameStore {
     spawnId: 1,
     shake: 0,
     lastHudAt: 0,
+  };
+}
+
+function createHud(store: GameStore): HudState {
+  return {
+    phase: store.phase,
+    score: Math.floor(store.score),
+    lives: store.lives,
+    bestScore: store.bestScore,
+    rocketFuel: store.rocketFuel,
+    progress: clamp(store.score / TARGET_SCORE, 0, 1),
   };
 }
 
@@ -226,7 +237,7 @@ function startRun(store: GameStore) {
 }
 
 function finishRun(store: GameStore, phase: "won" | "lost") {
-  store.phase = phase;
+  store.phase = phase === "won" && store.score >= TARGET_SCORE ? "won" : "lost";
   store.bestScore = Math.max(store.bestScore, Math.floor(store.score));
   try {
     window.localStorage.setItem(STORAGE_KEY, String(store.bestScore));
@@ -245,7 +256,7 @@ function updateGame(store: GameStore, now: number) {
   store.lastFrame = now;
   store.runTime += dt;
   store.speed = Math.min(430, 260 + store.runTime * 4.8 + store.score / 220);
-  store.score += dt * (180 + store.speed * 0.42);
+  store.score += dt * (360 + store.speed * 0.74);
   store.shake = Math.max(0, store.shake - dt * 3.2);
 
   const player = store.player;
@@ -679,18 +690,13 @@ function jumpOrThrust(store: GameStore) {
 export default function GameOneClient() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const storeRef = useRef<GameStore>(createStore());
+  const lastHudPhaseRef = useRef<GamePhase>("ready");
   const [hud, setHud] = useState<HudState>(INITIAL_HUD);
 
   const syncHud = useCallback(() => {
     const store = storeRef.current;
-    setHud({
-      phase: store.phase,
-      score: Math.floor(store.score),
-      lives: store.lives,
-      bestScore: store.bestScore,
-      rocketFuel: store.rocketFuel,
-      progress: clamp(store.score / TARGET_SCORE, 0, 1),
-    });
+    lastHudPhaseRef.current = store.phase;
+    setHud(createHud(store));
   }, []);
 
   const begin = useCallback(() => {
@@ -727,16 +733,10 @@ export default function GameOneClient() {
       const store = storeRef.current;
       updateGame(store, now);
       renderGame(ctx, store);
-      if (now - store.lastHudAt > 80 || store.phase !== hud.phase) {
+      if (now - store.lastHudAt > 80 || store.phase !== lastHudPhaseRef.current) {
         store.lastHudAt = now;
-        setHud({
-          phase: store.phase,
-          score: Math.floor(store.score),
-          lives: store.lives,
-          bestScore: store.bestScore,
-          rocketFuel: store.rocketFuel,
-          progress: clamp(store.score / TARGET_SCORE, 0, 1),
-        });
+        lastHudPhaseRef.current = store.phase;
+        setHud(createHud(store));
       }
       frame = window.requestAnimationFrame(loop);
     };
@@ -750,7 +750,7 @@ export default function GameOneClient() {
       window.cancelAnimationFrame(frame);
       window.removeEventListener("resize", resize);
     };
-  }, [hud.phase]);
+  }, []);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -803,8 +803,10 @@ export default function GameOneClient() {
     storeRef.current.input.thrust = false;
   };
 
+  const isVictory = hud.phase === "won" && hud.score >= TARGET_SCORE;
+  const isFinished = isVictory || hud.phase === "lost";
   const phaseTitle =
-    hud.phase === "won"
+    isVictory
       ? "10,000 hit - we're hiring"
       : hud.phase === "lost"
         ? "Run ended"
@@ -875,15 +877,15 @@ export default function GameOneClient() {
         </div>
       </section>
 
-      {hud.phase === "won" || hud.phase === "lost" ? (
+      {isFinished ? (
         <div className={styles.modal} role="dialog" aria-modal="true" aria-labelledby="game-result-title">
           <div className={styles.modalCard}>
-            <p className={styles.kicker}>{hud.phase === "won" ? "Mission complete" : "Try another run"}</p>
+            <p className={styles.kicker}>{isVictory ? "Mission complete" : "Try another run"}</p>
             <h2 id="game-result-title">
-              {hud.phase === "won" ? "You hit 10k. We're hiring." : "The chicken needs another sprint."}
+              {isVictory ? "You hit 10k. We're hiring." : "The chicken needs another sprint."}
             </h2>
             <p>
-              {hud.phase === "won"
+              {isVictory
                 ? "You handled jumps, magnet coins, rocket flight, and moving obstacles. Send the same energy to product engineering."
                 : "Collect rockets earlier, hold thrust through dense coin arcs, and keep three hearts alive."}
             </p>
@@ -891,7 +893,7 @@ export default function GameOneClient() {
               <button type="button" onClick={begin}>
                 Play again
               </button>
-              {hud.phase === "won" ? (
+              {isVictory ? (
                 <a href="mailto:work@xiaotongyu.com?subject=Hit%2010k%20-%20We're%20Hiring">
                   Apply / say hi
                 </a>
