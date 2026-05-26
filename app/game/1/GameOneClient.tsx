@@ -89,6 +89,7 @@ const HEIGHT = 540;
 const GROUND_Y = 414;
 const PLAYER_RADIUS = 28;
 const TARGET_SCORE = 10000;
+const MIN_WIN_SECONDS = 8;
 const STORAGE_KEY = "hit-10k-game-1-best-score";
 
 const INITIAL_HUD: HudState = {
@@ -363,7 +364,7 @@ function updateGame(store: GameStore, now: number) {
   store.obstacles = store.obstacles.filter((obstacle) => obstacle.x > -120);
   store.sparks = store.sparks.filter((spark) => spark.age < spark.life);
 
-  if (store.score >= TARGET_SCORE) {
+  if (store.score >= TARGET_SCORE && store.runTime >= MIN_WIN_SECONDS) {
     store.score = TARGET_SCORE;
     finishRun(store, "won");
   }
