@@ -693,6 +693,7 @@ export default function GameOneClient() {
   const storeRef = useRef<GameStore>(createStore());
   const lastHudPhaseRef = useRef<GamePhase>("ready");
   const [hud, setHud] = useState<HudState>(INITIAL_HUD);
+  const [launching, setLaunching] = useState(false);
 
   const syncHud = useCallback(() => {
     const store = storeRef.current;
@@ -701,8 +702,13 @@ export default function GameOneClient() {
   }, []);
 
   const begin = useCallback(() => {
-    startRun(storeRef.current);
-    syncHud();
+    if (launching) return;
+    setLaunching(true);
+    window.setTimeout(() => {
+      startRun(storeRef.current);
+      setLaunching(false);
+      syncHud();
+    }, 620);
   }, [syncHud]);
 
   useEffect(() => {
@@ -820,16 +826,16 @@ export default function GameOneClient() {
           <a className={styles.homeLink} href="/">
             XiaoTongYu / games
           </a>
-          <p className={styles.kicker}>2.5D web runner</p>
+          <p className={styles.kicker}>Section № 21 · Help the rooster get hired</p>
           <h1 id="game-title">{phaseTitle}</h1>
           <p>
-            Control a rocket chicken, collect magnetic coins, dodge 3D hazards,
-            and reach 10,000 points to unlock the hiring message.
+            A chicken on a rocket, real physics, magnet coins and absurd obstacles.
+            Cross 10,000 points to unlock the hiring letter.
           </p>
           <div className={styles.controls}>
-            <span>Space / W / tap: jump or thrust</span>
-            <span>A/D: drift</span>
-          </div>
+              <span>Space / tap: jump or thrust</span>
+              <span>Rocket boost included</span>
+            </div>
         </div>
 
         <div className={styles.gameCard}>
@@ -863,9 +869,15 @@ export default function GameOneClient() {
             <canvas ref={canvasRef} className={styles.canvas} />
             {hud.phase !== "playing" ? (
               <span className={styles.startOverlay}>
-                <strong>{hud.phase === "ready" ? "Start run" : "Run again"}</strong>
-                <small>Tap, click, or press Space</small>
+                <strong>{launching ? "Launching..." : hud.phase === "ready" ? "Start playing" : "Run again"}</strong>
+                <small>{launching ? "Smooth transition" : "Tap, click, or press Space"}</small>
               </span>
+            ) : null}
+            {hud.phase === "ready" ? (
+              <div className={`${styles.characterIntro} ${launching ? styles.characterIntroLaunch : ""}`}>
+                <div className={styles.chickenPortrait}>🐔</div>
+                <div className={styles.speechBubble}>AI got me fired.<br />Help me find a job!</div>
+              </div>
             ) : null}
           </button>
 
