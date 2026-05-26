@@ -757,7 +757,7 @@ export default function GameOneClient() {
       const store = storeRef.current;
       if (event.code === "Space" || event.code === "ArrowUp" || event.code === "KeyW") {
         event.preventDefault();
-        if (store.phase === "ready" || store.phase === "lost" || store.phase === "won") {
+        if (store.phase === "ready") {
           begin();
         }
         jumpOrThrust(store);
