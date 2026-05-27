@@ -372,7 +372,6 @@
 
 .controls button {
   display: inline-flex;
-  min-height: 31px;
   align-items: center;
   justify-content: center;
   border: 1px solid rgba(24, 17, 11, 0.12);
@@ -381,6 +380,7 @@
   color: rgba(24, 17, 11, 0.66);
   font: inherit;
   font-size: 10px;
+  height: 24px;
   font-weight: 820;
   padding: 0 14px;
   transition:
@@ -389,39 +389,10 @@
     color 180ms var(--ease-hover);
 }
 
-.iconControl {
-  width: 34px;
-  min-width: 34px;
-  padding: 0;
-}
-
-.controlIcon {
-  display: block;
-  width: 27px;
-  height: 27px;
-  stroke-width: 2.35;
-}
-
-.pauseControlIcon {
-  transform: scaleX(1.45);
-}
-
 .gamePageNight .controls button {
   border-color: rgba(255, 247, 223, 0.18);
   background: rgba(255, 247, 223, 0.82);
   color: rgba(32, 23, 42, 0.68);
-}
-
-.gamePageNight .controls button:first-child {
-  border-color: #fff7df;
-  background: #fff7df;
-  color: #18110b;
-}
-
-.controls button:first-child {
-  background: #18110b;
-  border-color: #18110b;
-  color: #fffdf4;
 }
 
 .controls button:hover {
@@ -583,6 +554,30 @@
 }
 
 .gamePageNight .playHint {
+  border-color: rgba(255, 247, 223, 0.12);
+  background: rgba(255, 247, 223, 0.74);
+  color: rgba(32, 23, 42, 0.48);
+}
+
+.launchHint {
+  position: fixed;
+  left: 50%;
+  top: 58%;
+  z-index: 3;
+  padding: 6px 10px;
+  border: 1px solid rgba(140, 91, 34, 0.08);
+  border-radius: 999px;
+  background: rgba(255, 252, 240, 0.62);
+  color: rgba(63, 43, 23, 0.48);
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.gamePageNight .launchHint {
   border-color: rgba(255, 247, 223, 0.12);
   background: rgba(255, 247, 223, 0.74);
   color: rgba(32, 23, 42, 0.48);
