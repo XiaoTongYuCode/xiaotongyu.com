@@ -1,5 +1,4 @@
 import InteractiveLayer from "./components/InteractiveLayer";
-import LoadingGate from "./components/LoadingGate";
 
 const capabilities = [
   {
@@ -47,8 +46,6 @@ export default function Home() {
   return (
     <main>
       <InteractiveLayer />
-      <LoadingGate />
-      <div className="motionLoader" aria-hidden="true" />
       <div className="scrollProgress" aria-hidden="true" />
 
       <header className="siteHeader">
@@ -59,6 +56,7 @@ export default function Home() {
           <a href="#profile">Profile</a>
           <a href="#work">Work</a>
           <a href="#studio">Studio</a>
+          <a href="/game/1">Game</a>
           <a href="#contact">Contact</a>
         </nav>
         <a className="headerCta magnetic" href="#contact">
