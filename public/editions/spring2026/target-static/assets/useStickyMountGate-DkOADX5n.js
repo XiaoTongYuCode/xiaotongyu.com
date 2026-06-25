@@ -1,0 +1,2 @@
+import{r}from"./chunk-EPOLDU6W-CgSudzSq.js";import{S as i}from"./SceneDataContext-CAq341Xd.js";const f=200;function l(){const e=r.useContext(i),n=(e==null?void 0:e.isContentMounted)??!0,u=(e==null?void 0:e.isPresetResolved)??!0,o=n&&u,t=r.useRef(!1),[,c]=r.useReducer(s=>s+1,0);return o&&(t.current=!0),r.useEffect(()=>{if(o||!t.current)return;const s=setTimeout(()=>{t.current=!1,c()},f);return()=>clearTimeout(s)},[o]),t.current}export{l as u};
+//# sourceMappingURL=useStickyMountGate-DkOADX5n.js.map

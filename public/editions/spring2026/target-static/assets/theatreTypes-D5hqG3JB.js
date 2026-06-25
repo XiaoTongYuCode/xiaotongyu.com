@@ -1,0 +1,2 @@
+import{d as t}from"./index-CbptNCiK.js";import{M as r,a as o}from"./presets-ClUyafeV.js";const p=e=>({x:e[0],y:e[1],z:e[2]}),m=e=>[e.x,e.y,e.z],a=e=>Object.fromEntries(e.map(s=>[s,s])),u=(e,s={})=>t.types.compound({x:t.types.number(e[0],s),y:t.types.number(e[1],s),z:t.types.number(e[2],s)}),y=(e,s)=>({simSize:t.types.number(e,{range:[r,o],nudgeMultiplier:16,label:"sim texture size"}),dyeSize:t.types.number(s,{range:[r,o],nudgeMultiplier:16,label:"dye texture size"})});export{p as a,y as f,a as o,m as t,u as v};
+//# sourceMappingURL=theatreTypes-D5hqG3JB.js.map

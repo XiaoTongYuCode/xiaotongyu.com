@@ -1,0 +1,248 @@
+{
+  "sheetsById": {
+    "Controls": {
+      "staticOverrides": {
+        "byObject": {
+          "floor": {
+            "opacity": 1,
+            "fadeNear": 0,
+            "fadeFar": 14,
+            "cellSize": 0.5199999999999996,
+            "majorEvery": 10,
+            "travelSpeed": -1.900000000000001,
+            "rotationOffset": 0.9000000000000008,
+            "y": 0.0009999999999998604,
+            "visible": false
+          },
+          "shadow": {
+            "opacity": 0.5,
+            "y": 0.04999999999999999,
+            "size": 5,
+            "visible": true,
+            "contactOpacity": 0.27999999999999997,
+            "contactScaleX": 3.1999999999999993,
+            "color": {
+              "r": 0,
+              "g": 0,
+              "b": 0,
+              "a": 1
+            },
+            "position": {
+              "y": 0.05399999999999991
+            },
+            "receiveShadow": true
+          },
+          "driveMode": {
+            "maxSpeed": 200,
+            "acceleration": 12,
+            "maxSteerAngle": 1,
+            "wheelSpinSpeed": 10,
+            "orbitSpeed": -0.05,
+            "carYawAmount": -0.1,
+            "carRollAmount": 0.5,
+            "visualForwardBoost": 5,
+            "gazeLerp": 1,
+            "revealSpeedThreshold": 0.1,
+            "cameraShakeStartSpeed": 0.46999999999999975,
+            "cameraShakeAmount": 0.014999999999999902,
+            "cameraShakeFrequency": 36.5,
+            "popupMoveLerp": 12,
+            "popupMoveSpeed": 500,
+            "popupStopLerp": 5,
+            "introSpinDuration": 1,
+            "braking": 12
+          },
+          "lights": {
+            "ambientIntensity": 0,
+            "keyIntensity": 0,
+            "keyPosition": {
+              "x": 0,
+              "y": 1.750000000000002,
+              "z": -1.5
+            },
+            "streamTextureLight": {
+              "intensity": 30,
+              "angle": 0.8200000000000003,
+              "penumbra": 0,
+              "decay": 0,
+              "distance": 16.5,
+              "flipFrontBack": true,
+              "targetOffset": {
+                "y": 0.04999999999999871
+              },
+              "positionOffset": {
+                "z": 0,
+                "y": -0.09999999999999996
+              }
+            }
+          },
+          "materialLayer": {
+            "body": {
+              "tintMode": "overlay",
+              "envMapIntensity": 1.0999999999999996,
+              "clearcoatRoughness": 0.17,
+              "roughness": 0.22,
+              "metalness": 0.6499999999999998,
+              "clearcoat": 0.27999999999999986
+            },
+            "carbon": {
+              "metalness": 0.12000000000000001,
+              "roughness": 0.24
+            }
+          },
+          "driveCamera": {
+            "positionOffset": {
+              "x": 0
+            }
+          },
+          "speedOverlay": {
+            "rgbShift": 1.8500000000000014,
+            "velocityMultiplier": 1.3500000000000003,
+            "strength": 0.9700000000000075,
+            "speed": 0.5999999999999999,
+            "lineWidth": 0.17999999999999935,
+            "bendStrength": 0.8200000000000003,
+            "smoothing": 7.999999999999999,
+            "centerFollow": 1.5400000000000003,
+            "rgb": {
+              "r": 0.9999999999999999
+            },
+            "colorMix": 0,
+            "color": {
+              "r": 0.3333333333333333,
+              "g": 1,
+              "b": 0,
+              "a": 1
+            },
+            "dpr": 1.099999999999999,
+            "lineColorShift": 1.2999999999999996
+          },
+          "instructions": {
+            "bottom": 55.400000000000006,
+            "fontSize": 11,
+            "opacity": 0.9000000000000001,
+            "letterSpacing": 1.5,
+            "text": "WASD"
+          }
+        }
+      }
+    },
+    "Main": {
+      "staticOverrides": {
+        "byObject": {
+          "car": {
+            "rotation": {
+              "y": -3.134592653589797
+            },
+            "scale": 0.007,
+            "pbr": {
+              "envMapIntensity": 2,
+              "streamEnvironment": true,
+              "metalness": 0.7899999999999994,
+              "roughness": 0.27999999999999997,
+              "clearcoat": 0.5999999999999999,
+              "clearcoatRoughness": 0.13999999999999999
+            },
+            "lookAt": {
+              "z": -4,
+              "x": 5.760000000000001
+            },
+            "heightMove": {
+              "top": -1.7000000000000013,
+              "bottom": 2.4999999999999982
+            },
+            "bodyColor": {
+              "r": 1,
+              "g": 1,
+              "b": 1,
+              "a": 1
+            }
+          },
+          "camera": {
+            "height": {
+              "top": -2,
+              "bottom": 2
+            },
+            "distance": 3.5,
+            "fov": 43,
+            "lookAtY": -0.14500000000000024,
+            "width": {
+              "left": 1.2,
+              "right": -1.2
+            },
+            "followLerp": 30
+          },
+          "shoppy": {
+            "visible": false,
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            },
+            "position": {
+              "z": -8,
+              "y": 0.7500000000000001
+            }
+          },
+          "streamWindow": {
+            "saturation": 1,
+            "yOffset": -0.4650000000000003
+          }
+        }
+      }
+    }
+  },
+  "definitionVersion": "0.4.0",
+  "revisionHistory": [
+    "gfi60sM9_xs0eSho",
+    "mZ5ICm4h_I5pf6FF",
+    "wYtznTTL1XZoHRuk",
+    "zXUK0SZVY8oNKyfe",
+    null,
+    "uA1dqLIRYoXdhCCN",
+    null,
+    "lbofn46UDIFEiGvI",
+    "3tfMGoBtjet571Vd",
+    null,
+    "pFerxcOItwc0FJDK",
+    null,
+    "Z_YH1kyo-bSuY6bz",
+    null,
+    "9sL7B8_JXDSHx6-O",
+    null,
+    "OkLYx1HuFViuE4nx",
+    null,
+    "CNhIG9tf93XQhB2Q",
+    null,
+    "MPVFH7OSQSO7A1yW",
+    null,
+    "SvGzFLLPhzI_dpyg",
+    null,
+    "mtxIEGPr2oUPLHlM",
+    null,
+    "06M2ZkWCtHoeShfZ",
+    null,
+    "ReyKSjaoRSl4sgWG",
+    null,
+    "tOqqJd4YjmiMbIAL",
+    "UsOhK77RCWZ87qA8",
+    null,
+    "U8wuTsxs39B7dbFC",
+    null,
+    "Jy4qims3CqJgCSu9",
+    null,
+    "fC3fUCwkEajfEbaS",
+    null,
+    "0lWmOy-lU0qDxT8i",
+    null,
+    "2NmcC3NGSHbnk3pF",
+    null,
+    "8I7um6euUoTtgtMA",
+    null,
+    "ERAq6QOjmB9w1-kI",
+    "3h053jk6St9OWwMC",
+    null,
+    "kgtvqpt8dN4yOlZm",
+    null
+  ]
+}

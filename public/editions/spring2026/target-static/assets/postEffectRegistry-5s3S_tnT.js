@@ -1,0 +1,2 @@
+import{r as o}from"./chunk-EPOLDU6W-CgSudzSq.js";const e=new Set;let r=0;const n=new Set;function s(){r+=1;for(const t of n)t()}function u(t){return e.add(t),s(),()=>{e.delete(t)&&s()}}function E(){return[...e]}function f(){return r}function i(t){return n.add(t),()=>{n.delete(t)}}function a(){return o.useSyncExternalStore(i,f,()=>0)}export{E as g,u as r,a as u};
+//# sourceMappingURL=postEffectRegistry-5s3S_tnT.js.map

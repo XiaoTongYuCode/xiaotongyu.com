@@ -1,0 +1,13 @@
+/editions/spring2026/target-static/data/agentic-prod-2026-06-15T14-54-12.json
+/editions/spring2026/target-static/data/developer-drive-portal-developer-prod-2026-06-17T01-47-35.json
+/editions/spring2026/target-static/data/developer-prod-2026-06-17T03-24-43.json
+/editions/spring2026/target-static/data/finance-prod-2026-06-17T03-34-38.json
+/editions/spring2026/target-static/data/hero-prod-2026-06-23T06-22-06.json
+/editions/spring2026/target-static/data/marketing-prod-2026-06-17T03-23-40.json
+/editions/spring2026/target-static/data/online-prod-update-2026-06-22T16-43-19.json
+/editions/spring2026/target-static/data/operations-prod-2026-06-15T14-48-15.json
+/editions/spring2026/target-static/data/payments-prod-2026-06-15T13-49-01.json
+/editions/spring2026/target-static/data/retail-merch-merchbw-2026-06-14T13-24-51.json
+/editions/spring2026/target-static/data/retail-prod-2026-06-17T03-27-20.json
+/editions/spring2026/target-static/data/shop-app-prod-2026-06-15T14-46-28.json
+/editions/spring2026/target-static/data/sidekick-prod-2026-06-17T00-12-04.json
