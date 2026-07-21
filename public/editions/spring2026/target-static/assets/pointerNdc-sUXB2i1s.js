@@ -1,2 +1,0 @@
-const c=n=>Math.min(1,Math.max(-1,n));function h(n,t,i,{yAxis:l="up",clamp:f=!1,requireInside:a=!1}={}){const{width:s,height:r}=t;if(s<=0||r<=0)return!1;const e=(n.clientX-t.left)/s*2-1,o=(n.clientY-t.top)/r*2-1,w=e>=-1&&e<=1&&o>=-1&&o<=1;if(a&&!w)return!1;i.x=f?c(e):e;const d=f?c(o):o;return i.y=l==="up"?-d:d,w}function u(n,t,i){return typeof window>"u"?!1:h(n,{left:0,top:0,width:window.innerWidth,height:window.innerHeight},t,i)}export{u as a,h as w};
-//# sourceMappingURL=pointerNdc-sUXB2i1s.js.map
