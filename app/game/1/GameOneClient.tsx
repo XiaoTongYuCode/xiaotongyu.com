@@ -246,12 +246,12 @@ export default function GameOneClient() {
           <img src="/xtyopen-logo.svg" alt="xtyopen" />
         </a>
         <div className={styles.navLinks}>
-          <a href="/#profile">Profile</a>
-          <a href="/#work">Work</a>
-          <a href="/#studio">Studio</a>
-          <a href="/#contact">Contact</a>
+          <a href="/work">Work</a>
+          <a href="/game/1">Game</a>
+          <a href="/#about">About</a>
+          <a href="mailto:work@xiaotongyu.com">Contact</a>
         </div>
-        <a className={styles.navCta} href="/#contact">
+        <a className={styles.navCta} href="mailto:work@xiaotongyu.com">
           Get in touch
         </a>
       </nav>

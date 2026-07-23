@@ -1,0 +1,40 @@
+{
+  "densityScale": 1.55,
+  "transitionSpeed": 0.03,
+  "clips": [
+    {
+      "id": "analyst-copilot",
+      "src": "/dotmorph-assets/depth-clip-02.mp4",
+      "canonicalDuration": 4,
+      "depthGamma": 1,
+      "enterDirection": "auto",
+      "exitDirection": "auto"
+    },
+    {
+      "id": "prototype-making",
+      "src": "/dotmorph-assets/depth-clip-03-tooling.mp4",
+      "canonicalDuration": 4.066667,
+      "depthGamma": 1,
+      "textRevealSpeed": 1.08,
+      "enterDirection": "auto",
+      "exitDirection": "auto"
+    },
+    {
+      "id": "knowledge-structure",
+      "src": "/dotmorph-assets/depth-clip-04.mp4",
+      "canonicalDuration": 6.041667,
+      "depthGamma": 0.2,
+      "enterDirection": "auto",
+      "exitDirection": "auto"
+    },
+    {
+      "id": "industry-map",
+      "src": "/dotmorph-assets/depth-clip-05.mp4",
+      "canonicalDuration": 3.993832,
+      "depthGamma": 0.4,
+      "holdMultiplier": 1.1,
+      "enterDirection": "auto",
+      "exitDirection": "auto"
+    }
+  ]
+}
