@@ -1,28 +1,11 @@
 "use client";
 
-import { useEffect } from "react";
 import { ArrowIcon } from "../_components/datacurve-replica/ui";
 import { SiteFooter, SiteNav, useSiteCopy } from "../_components/site/SiteChrome";
 import { WorkPageStyles } from "./WorkPageStyles";
 
 export default function WorkPageClient() {
   const { copy, languageSwitcher } = useSiteCopy();
-
-  useEffect(() => {
-    const isChinese = copy.htmlLang === "zh-CN";
-    document.title = isChinese
-      ? "精选作品 | XiaoTongYu"
-      : "Selected Work | Xiaotong Yu";
-
-    const description = document.querySelector<HTMLMetaElement>(
-      'meta[name="description"]',
-    );
-    if (description) {
-      description.content = isChinese
-        ? "小童近期围绕本地 AI、社区产品与浏览器体验完成的项目与实验。"
-        : "Selected products and experiments by Xiaotong Yu across local AI, community software, and playful browser experiences.";
-    }
-  }, [copy.htmlLang]);
 
   return (
     <main className="dotmorph-page work-page">

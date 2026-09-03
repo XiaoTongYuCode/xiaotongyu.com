@@ -5,9 +5,9 @@ export const enUS: LocaleMessages = {
     localeName: "English",
     htmlLang: "en",
     meta: {
-      title: "Xiaotong Yu | Product Engineering & AI Experiments",
+      title: "肖彤宇（Xiaotong Yu）",
       description:
-        "Xiaotong Yu's personal website for product engineering, AI applications, creative coding, and thoughtful web experiments.",
+        "The personal website of Xiaotong Yu (肖彤宇), featuring product engineering, AI applications, creative coding, and thoughtful web experiments.",
     },
     nav: {
       ariaMain: "Main navigation",
@@ -36,7 +36,7 @@ export const enUS: LocaleMessages = {
       sectionLabel: "Software engineer / Personal portfolio",
       title: "Building useful products, AI tools, and web experiences.",
       subtitle:
-        "Xiaotong Yu is a software engineer based in Beijing, working across product interfaces, AI workflows, and thoughtful web experiments.",
+        "A software engineer based in Beijing, working across product interfaces, AI workflows, and thoughtful web experiments.",
       primaryCta: "Get in touch",
       secondaryCta: "View work",
     },
@@ -44,7 +44,7 @@ export const enUS: LocaleMessages = {
       kicker:
         "Good software often comes from careful choices, steady iteration, and respect for the details.",
       paragraphs: [
-        "xiaotongyu.com is my personal space on the web—a place for product practice, AI experiments, engineering work, and an ongoing exploration of interface and interaction.",
+        "I am Xiaotong Yu (Chinese name: 肖彤宇), also known online as XiaoTongYu. xiaotongyu.com is my personal space on the web—a place for product practice, AI experiments, engineering work, and an ongoing exploration of interface and interaction.",
         "I like turning early ideas into products people can actually use. From information structure and interaction feedback to maintainable implementation, I try to make each step clear, dependable, and grounded in real tasks.",
         "Recent work includes Myrisle, a privacy-first local AI diary; Petspace, a pet community built around everyday sharing; and Pixel Roguelite, a pixel-art browser combat prototype.",
         "In AI applications, I care about how models connect with retrieval, tools, and human review to become workflows people want to return to—not just polished one-off demos.",

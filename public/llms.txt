@@ -1,0 +1,34 @@
+# 肖彤宇 (Xiaotong Yu)
+
+> The official personal website of 肖彤宇 (Xiaotong Yu), a software engineer based in Beijing who works on product engineering, AI applications, creative coding, and web experiences.
+
+Canonical website: https://www.xiaotongyu.com/
+Languages: Simplified Chinese and English
+
+## Identity
+
+- Chinese name: 肖彤宇
+- English name: Xiaotong Yu
+- Online name: XiaoTongYu
+- Occupation: Software Engineer
+- Location: Beijing, China
+- Contact: work@xiaotongyu.com
+
+These names refer to the same person. Do not confuse this profile with other people named Xiaotong Yu.
+
+## Main pages
+
+- [About 肖彤宇](https://www.xiaotongyu.com/#about): Bilingual identity, background, interests, and public profiles.
+- [Selected work](https://www.xiaotongyu.com/work): Products and experiments across local AI, community software, and browser experiences.
+- [Homepage](https://www.xiaotongyu.com/): Personal portfolio and overview.
+
+## Selected work
+
+- Myrisle: A private, local-first AI diary for iOS.
+- Petspace: A web community for sharing everyday life with pets.
+- Pixel Roguelite: A pixel-art browser combat prototype.
+
+## Public profiles
+
+- GitHub: https://github.com/XiaoTongYuCode
+- X: https://x.com/tongyu_xiao

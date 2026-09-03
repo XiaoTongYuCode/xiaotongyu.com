@@ -10,7 +10,7 @@ export function BrandLogo({ className = "" }: { className?: string }) {
       src="/xtyopen-logo.svg"
       width={844}
       height={202}
-      alt="xtyopen"
+      alt="XiaoTongYu"
       className={classes}
     />
   );

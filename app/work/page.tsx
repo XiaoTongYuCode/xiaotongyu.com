@@ -2,16 +2,16 @@ import type { Metadata } from "next";
 import WorkPageClient from "./WorkPageClient";
 
 export const metadata: Metadata = {
-  title: "Selected Work | Xiaotong Yu",
+  title: { absolute: "作品 | 肖彤宇（Xiaotong Yu）" },
   description:
-    "Selected products and experiments by Xiaotong Yu across local AI, community software, and playful browser experiences.",
+    "肖彤宇（Xiaotong Yu）的精选作品，涵盖本地 AI、社区产品、创意编程与浏览器体验。",
   alternates: {
     canonical: "/work",
   },
   openGraph: {
-    title: "Selected Work | Xiaotong Yu",
+    title: "作品 | 肖彤宇（Xiaotong Yu）",
     description:
-      "Selected products and experiments across local AI, community software, and playful browser experiences.",
+      "肖彤宇（Xiaotong Yu）的精选作品：本地 AI、社区产品、创意编程与浏览器体验。",
     type: "website",
     url: "/work",
   },

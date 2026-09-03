@@ -104,11 +104,6 @@ export function useSiteCopy(): SiteCopyState {
 
   useEffect(() => {
     document.documentElement.lang = copy.htmlLang;
-    document.title = copy.meta.title;
-    const description = document.querySelector<HTMLMetaElement>('meta[name="description"]');
-    if (description) {
-      description.content = copy.meta.description;
-    }
   }, [copy.htmlLang]);
 
   useEffect(() => {
