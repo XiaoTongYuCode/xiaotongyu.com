@@ -46,7 +46,7 @@ export const enUS: LocaleMessages = {
       paragraphs: [
         "I am Xiaotong Yu (Chinese name: 肖彤宇), also known online as XiaoTongYu. xiaotongyu.com is my personal space on the web—a place for product practice, AI experiments, engineering work, and an ongoing exploration of interface and interaction.",
         "I like turning early ideas into products people can actually use. From information structure and interaction feedback to maintainable implementation, I try to make each step clear, dependable, and grounded in real tasks.",
-        "Recent work includes Myrisle, a privacy-first local AI diary; Petspace, a pet community built around everyday sharing; and Pixel Roguelite, a pixel-art browser combat prototype.",
+        "Recent work includes CornAgent, an AI assistant for conversations, search, and tool-based tasks; Myrisle, a privacy-first local AI diary; and Petspace, a pet community built around everyday sharing.",
         "In AI applications, I care about how models connect with retrieval, tools, and human review to become workflows people want to return to—not just polished one-off demos.",
       ],
       closing: "New work, experiments, and engineering notes will keep growing here.",
@@ -55,9 +55,16 @@ export const enUS: LocaleMessages = {
     work: {
       heading: "Selected work",
       intro:
-        "A few recent products and experiments across local AI, community software, and playful browser experiences.",
+        "A few recent products and experiments across AI assistants, local AI, and community software.",
       itemAria: "Open project",
       items: [
+        {
+          title: "CornAgent",
+          description:
+            "An AI assistant for conversations, web search, and tasks powered by tools.",
+          kind: "AI agent · Web search · Tool use",
+          url: "https://cornagent.xiaotongyu.com/chat",
+        },
         {
           title: "Myrisle",
           description:
@@ -71,13 +78,6 @@ export const enUS: LocaleMessages = {
             "A friendly web community for sharing the small moments of life with pets.",
           kind: "Web product · Pet community · Daily sharing",
           url: "https://petspace.xiaotongyu.com/",
-        },
-        {
-          title: "Pixel Roguelite",
-          description:
-            "A compact browser combat prototype built around pixel art and quick runs.",
-          kind: "Browser game · Pixel art · Combat prototype",
-          url: "https://pixel-roguelite.vercel.app/",
         },
       ],
     },

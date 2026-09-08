@@ -19,14 +19,14 @@ These names refer to the same person. Do not confuse this profile with other peo
 ## Main pages
 
 - [About 肖彤宇](https://www.xiaotongyu.com/#about): Bilingual identity, background, interests, and public profiles.
-- [Selected work](https://www.xiaotongyu.com/work): Products and experiments across local AI, community software, and browser experiences.
+- [Selected work](https://www.xiaotongyu.com/work): Products and experiments across AI assistants, local AI, and community software.
 - [Homepage](https://www.xiaotongyu.com/): Personal portfolio and overview.
 
 ## Selected work
 
+- [CornAgent](https://cornagent.xiaotongyu.com/chat): An AI assistant for conversations, web search, and tasks powered by tools.
 - Myrisle: A private, local-first AI diary for iOS.
 - Petspace: A web community for sharing everyday life with pets.
-- Pixel Roguelite: A pixel-art browser combat prototype.
 
 ## Public profiles
 
