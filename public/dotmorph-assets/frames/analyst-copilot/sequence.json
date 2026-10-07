@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "width": 640,
+  "height": 360,
+  "columns": 4,
+  "rows": 4,
+  "frameCount": 120,
+  "fps": 30,
+  "duration": 4,
+  "atlases": [
+    "/dotmorph-assets/frames/analyst-copilot/atlas-001-91c92dab5e92.webp",
+    "/dotmorph-assets/frames/analyst-copilot/atlas-002-cd04a7055c77.webp",
+    "/dotmorph-assets/frames/analyst-copilot/atlas-003-80535e8f13d7.webp",
+    "/dotmorph-assets/frames/analyst-copilot/atlas-004-a3d260e6be63.webp",
+    "/dotmorph-assets/frames/analyst-copilot/atlas-005-d789f3f7b3ba.webp",
+    "/dotmorph-assets/frames/analyst-copilot/atlas-006-0d1b45747ab0.webp",
+    "/dotmorph-assets/frames/analyst-copilot/atlas-007-0f3254c76d2e.webp",
+    "/dotmorph-assets/frames/analyst-copilot/atlas-008-ada7684eec73.webp"
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "width": 640,
+  "height": 360,
+  "columns": 4,
+  "rows": 4,
+  "frameCount": 61,
+  "fps": 15,
+  "duration": 4.066667,
+  "atlases": [
+    "/dotmorph-assets/frames/prototype-making/atlas-001-38c400a33a4d.webp",
+    "/dotmorph-assets/frames/prototype-making/atlas-002-ecccfd9417b7.webp",
+    "/dotmorph-assets/frames/prototype-making/atlas-003-931dbb6dc288.webp",
+    "/dotmorph-assets/frames/prototype-making/atlas-004-7df8ea495523.webp"
+  ]
+}

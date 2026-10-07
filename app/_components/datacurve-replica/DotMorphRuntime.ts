@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { DepthFrameSequence } from "./DepthFrameSequence";
 import { defaultScenes } from "./sceneConfig";
 import { fragmentShader, vertexShader } from "./shaders";
 import { clamp, mixNumber, resolveTimeline } from "./timeline";
@@ -12,18 +13,11 @@ export type ClipSource = Scene & {
 type TextureRecord = {
   aspect: number;
   duration: number;
-  isFirst: boolean;
   isReady: boolean;
-  lastSeekAt: number;
-  lastSeekTime: number;
-  lastTextureTime: number;
   loadFailed: boolean;
-  needsTextureUpdate: boolean;
   readyPromise: Promise<{ ok: boolean; reason: string }>;
-  seekInFlight: boolean;
   source: ClipSource;
-  texture: THREE.VideoTexture;
-  video: HTMLVideoElement;
+  sequence: DepthFrameSequence;
 };
 
 export type AvoidRect = {
@@ -71,47 +65,6 @@ function directionVector(direction: DirectionName | undefined): [number, number]
   }
 }
 
-function makeVideo(source: ClipSource) {
-  const video = document.createElement("video");
-  video.muted = true;
-  video.playsInline = true;
-  video.preload = "auto";
-  video.loop = false;
-  video.crossOrigin = "anonymous";
-  video.disablePictureInPicture = true;
-  video.setAttribute("muted", "");
-  video.setAttribute("playsinline", "");
-  video.src = source.clipSrc;
-  return video;
-}
-
-function waitForVideo(video: HTMLVideoElement, timeoutMs = 4500): Promise<{ ok: boolean; reason: string }> {
-  if (video.readyState >= 1 && video.videoWidth > 0 && video.videoHeight > 0) {
-    return Promise.resolve({ ok: true, reason: "ready" });
-  }
-
-  return new Promise((resolve) => {
-    let settled = false;
-    const finish = (ok: boolean, reason: string) => {
-      if (settled) return;
-      settled = true;
-      window.clearTimeout(timer);
-      video.removeEventListener("loadedmetadata", ready);
-      video.removeEventListener("loadeddata", ready);
-      video.removeEventListener("error", error);
-      resolve({ ok, reason });
-    };
-    const ready = () => {
-      if (video.readyState >= 1 && video.videoWidth > 0 && video.videoHeight > 0) finish(true, "ready");
-    };
-    const error = () => finish(false, "error");
-    const timer = window.setTimeout(() => finish(false, "timeout"), timeoutMs);
-    video.addEventListener("loadedmetadata", ready);
-    video.addEventListener("loadeddata", ready);
-    video.addEventListener("error", error);
-  });
-}
-
 function getRendererContext(canvas: HTMLCanvasElement) {
   const attributes: WebGLContextAttributes = {
     alpha: true,
@@ -150,7 +103,6 @@ export class DotMorphRuntime {
   private readonly material: THREE.ShaderMaterial;
   private readonly renderer: THREE.WebGLRenderer;
   private readonly scene: THREE.Scene;
-  private readonly stage: HTMLDivElement;
   private currentTimeline: TimelineSnapshot | null = null;
   private densityScale = 1.15;
   private disposed = false;
@@ -196,6 +148,11 @@ export class DotMorphRuntime {
       depthWrite: false,
       depthTest: true,
       uniforms: {
+        uFrameA: { value: new THREE.Vector4(0, 0, 1, 1) },
+        uFrameB: { value: new THREE.Vector4(0, 0, 1, 1) },
+        uFinalFrame0: { value: new THREE.Vector4(0, 0, 1, 1) },
+        uFinalFrame1: { value: new THREE.Vector4(0, 0, 1, 1) },
+        uFinalFrame2: { value: new THREE.Vector4(0, 0, 1, 1) },
         uTextureA: { value: this.emptyTexture },
         uTextureB: { value: this.emptyTexture },
         uFinalTexture0: { value: this.emptyTexture },
@@ -244,18 +201,6 @@ export class DotMorphRuntime {
         uFinalTint2: { value: new THREE.Color("#000000") },
       },
     });
-    this.stage = document.createElement("div");
-    this.stage.setAttribute("aria-hidden", "true");
-    Object.assign(this.stage.style, {
-      height: "1px",
-      left: "-9999px",
-      overflow: "hidden",
-      pointerEvents: "none",
-      position: "fixed",
-      top: "-9999px",
-      width: "1px",
-    });
-    document.body.appendChild(this.stage);
   }
 
   resetClock() {
@@ -265,13 +210,13 @@ export class DotMorphRuntime {
   setSources(sources: ClipSource[]) {
     this.destroyRecords();
     this.sources = sources.length ? sources : defaultScenes;
-    this.records = this.sources.map((source, index) => this.createRecord(source, index));
+    this.records = this.sources.map((source, index) => this.createRecord(source, index === 0));
     this.lastParticleTarget = 0;
   }
 
   setFinalSources(sources: ClipSource[]) {
     this.destroyFinalRecords();
-    this.finalRecords = sources.slice(0, 3).map((source, index) => this.createRecord(source, index + 100));
+    this.finalRecords = sources.slice(0, 3).map((source) => this.createRecord(source));
   }
 
   setDensityScale(value: number) {
@@ -344,8 +289,9 @@ export class DotMorphRuntime {
   async resize() {
     if (this.disposed) return;
     if (this.records[0]) await this.records[0].readyPromise;
-    const firstReady = this.records.find((record) => record.video.videoWidth && record.video.videoHeight);
-    if (firstReady) this.sourceAspect = firstReady.video.videoWidth / firstReady.video.videoHeight;
+    if (this.disposed) return;
+    const firstReady = this.records.find((record) => record.isReady);
+    if (firstReady) this.sourceAspect = firstReady.aspect;
     const cssWidth = this.canvas.clientWidth || window.innerWidth || 1;
     const cssHeight = this.canvas.clientHeight || window.innerHeight || 1;
     this.viewportWidth = cssWidth;
@@ -365,7 +311,6 @@ export class DotMorphRuntime {
       this.buildGeometry(target);
     }
     this.updatePlaneScale(cssWidth, cssHeight, this.sourceAspect);
-    void this.primeVideos();
   }
 
   render(now = performance.now()): TimelineSnapshot {
@@ -389,13 +334,19 @@ export class DotMorphRuntime {
     this.updatePlaneScale(this.viewportWidth || this.canvas.clientWidth || window.innerWidth || 1, this.viewportHeight || this.canvas.clientHeight || window.innerHeight || 1, mixNumber(currentAspect, nextAspect, timeline.morph));
 
     const sameRecord = currentRecord && currentRecord === nextRecord;
-    const currentSeek = currentRecord ? this.seekRecord(currentRecord, timeline.progressA) : false;
-    const nextSeek = nextRecord && !sameRecord ? this.seekRecord(nextRecord, timeline.progressB) : false;
+    currentRecord?.sequence.seek(timeline.progressA);
+    if (!sameRecord) nextRecord?.sequence.seek(timeline.progressB);
+    this.records.forEach((record) => {
+      if (record !== currentRecord && record !== nextRecord) record.sequence.pause();
+    });
     const uniforms = this.material.uniforms;
-    uniforms.uTextureA.value = currentRecord?.texture || this.emptyTexture;
-    uniforms.uTextureB.value = nextRecord?.texture || currentRecord?.texture || this.emptyTexture;
-    uniforms.uTexelA.value.set(1 / Math.max(1, currentRecord?.video.videoWidth || 640), 1 / Math.max(1, currentRecord?.video.videoHeight || 360));
-    uniforms.uTexelB.value.set(1 / Math.max(1, nextRecord?.video.videoWidth || currentRecord?.video.videoWidth || 640), 1 / Math.max(1, nextRecord?.video.videoHeight || currentRecord?.video.videoHeight || 360));
+    uniforms.uTextureA.value = currentRecord?.sequence.texture || this.emptyTexture;
+    uniforms.uTextureB.value = nextRecord?.sequence.texture || currentRecord?.sequence.texture || this.emptyTexture;
+    uniforms.uTexelA.value.set(1 / Math.max(1, currentRecord?.sequence.manifest?.width || 640), 1 / Math.max(1, currentRecord?.sequence.manifest?.height || 360));
+    uniforms.uTexelB.value.set(1 / Math.max(1, nextRecord?.sequence.manifest?.width || currentRecord?.sequence.manifest?.width || 640), 1 / Math.max(1, nextRecord?.sequence.manifest?.height || currentRecord?.sequence.manifest?.height || 360));
+    if (currentRecord) uniforms.uFrameA.value.copy(currentRecord.sequence.frameRect);
+    else uniforms.uFrameA.value.set(0, 0, 1, 1);
+    uniforms.uFrameB.value.copy(nextRecord?.sequence.frameRect ?? uniforms.uFrameA.value);
     uniforms.uFlipA.value = currentRecord?.source.flipY ? 1 : 0;
     uniforms.uFlipB.value = nextRecord?.source.flipY ? 1 : 0;
     uniforms.uMorph.value = timeline.morph;
@@ -409,9 +360,7 @@ export class DotMorphRuntime {
     uniforms.uDepthGammaA.value = this.resolveDepthGamma(this.sources[timeline.a], timeline, "A");
     uniforms.uDepthGammaB.value = this.resolveDepthGamma(this.sources[timeline.b], timeline, "B");
 
-    this.updateRecordTexture(currentRecord, currentSeek);
-    if (!sameRecord) this.updateRecordTexture(nextRecord, nextSeek);
-    this.updateFinalUniforms().forEach((record) => this.updateRecordTexture(record));
+    this.updateFinalUniforms();
 
     if (this.points) {
       const motionScale = 1 - this.finalProgress;
@@ -445,75 +394,30 @@ export class DotMorphRuntime {
     this.material.dispose();
     this.emptyTexture.dispose();
     this.renderer.dispose();
-    this.stage.remove();
   }
 
-  private createRecord(source: ClipSource, index = 0): TextureRecord {
-    const video = makeVideo(source);
-    this.stage.appendChild(video);
-    const texture = new THREE.VideoTexture(video);
-    texture.minFilter = THREE.LinearFilter;
-    texture.magFilter = THREE.LinearFilter;
-    texture.generateMipmaps = false;
-    texture.colorSpace = THREE.SRGBColorSpace;
+  private createRecord(source: ClipSource, isFirst = false): TextureRecord {
+    const sequence = new DepthFrameSequence();
     const record: TextureRecord = {
       aspect: this.sourceAspect,
       duration: source.duration || 1,
-      isFirst: index === 0,
       isReady: false,
-      lastSeekAt: 0,
-      lastSeekTime: -1,
-      lastTextureTime: -1,
       loadFailed: false,
-      needsTextureUpdate: true,
       readyPromise: Promise.resolve({ ok: false, reason: "pending" }),
-      seekInFlight: false,
       source,
-      texture,
-      video,
+      sequence,
     };
-    const updateMetadata = () => {
-      record.duration = Number.isFinite(video.duration) && video.duration > 0 ? video.duration : record.duration;
-      if (video.videoWidth && video.videoHeight) {
-        const nextAspect = video.videoWidth / video.videoHeight;
-        record.aspect = nextAspect;
-        if (record.isFirst) this.sourceAspect = nextAspect;
-      }
-    };
-    const load = async (attempt: number): Promise<{ ok: boolean; reason: string }> => {
-      const result = await waitForVideo(video);
-      if (this.disposed) return result;
-      if (result.ok) {
-        record.isReady = true;
-        updateMetadata();
-        return result;
-      }
-      if (attempt < 1) {
-        const sep = source.clipSrc.includes("?") ? "&" : "?";
-        video.src = `${source.clipSrc}${sep}_retry=${Date.now().toString(36)}`;
-        video.load();
-        return load(attempt + 1);
-      }
+    record.readyPromise = sequence.load(source.framesSrc).then((manifest) => {
+      if (this.disposed) return { ok: false, reason: "disposed" };
+      record.duration = manifest.duration;
+      record.aspect = manifest.width / manifest.height;
+      record.isReady = true;
+      if (isFirst) this.sourceAspect = record.aspect;
+      return { ok: true, reason: "ready" };
+    }).catch(() => {
       record.loadFailed = true;
-      return result;
-    };
-    record.readyPromise = load(0);
-    video.addEventListener("loadedmetadata", updateMetadata);
-    video.addEventListener("durationchange", updateMetadata);
-    video.addEventListener("loadeddata", () => {
-      record.needsTextureUpdate = true;
+      return { ok: false, reason: "error" };
     });
-    video.addEventListener("seeking", () => {
-      record.seekInFlight = true;
-    });
-    video.addEventListener("seeked", () => {
-      record.seekInFlight = false;
-      record.needsTextureUpdate = true;
-    });
-    video.addEventListener("timeupdate", () => {
-      record.needsTextureUpdate = true;
-    });
-    video.load();
     return record;
   }
 
@@ -528,100 +432,30 @@ export class DotMorphRuntime {
   }
 
   private disposeRecord(record: TextureRecord) {
-    record.video.pause();
-    record.video.removeAttribute("src");
-    record.video.load();
-    record.video.remove();
-    record.texture.dispose();
-  }
-
-  private async primeVideos() {
-    const records = [...this.records, ...this.finalRecords];
-    for (const record of records) {
-      try {
-        if (record.video.paused) {
-          await record.video.play();
-          record.video.pause();
-        }
-      } catch {
-        // Browsers can block autoplay priming; frame scrubbing still works after metadata.
-      }
-      if (record.video.readyState >= 1 && record.video.currentTime === 0) {
-        try {
-          record.video.currentTime = Math.min(0.01, Math.max(0, record.duration - 0.03));
-          record.needsTextureUpdate = true;
-        } catch {
-          // Some browsers reject early seeks while metadata settles.
-        }
-      }
-    }
-  }
-
-  private seekRecord(record: TextureRecord, progress: number) {
-    const duration = Math.max(0.001, record.duration - 0.035);
-    const time = clamp(progress) * duration;
-    const now = performance.now();
-    const settling = (record.video.seeking || record.seekInFlight) && now - record.lastSeekAt < 180;
-    if (
-      record.video.readyState < 1 ||
-      settling ||
-      Math.abs(record.video.currentTime - time) < 0.024 ||
-      Math.abs(record.lastSeekTime - time) < 0.014 ||
-      now - record.lastSeekAt < 28
-    ) {
-      return false;
-    }
-    try {
-      record.lastSeekAt = now;
-      record.lastSeekTime = time;
-      record.seekInFlight = true;
-      record.needsTextureUpdate = true;
-      if (Math.abs(record.video.currentTime - time) > 0.18 && "fastSeek" in record.video) {
-        record.video.fastSeek(time);
-      } else {
-        record.video.currentTime = time;
-      }
-      return true;
-    } catch {
-      record.seekInFlight = false;
-      return false;
-    }
-  }
-
-  private updateRecordTexture(record: TextureRecord | undefined, forced = false) {
-    if (!record?.texture || !record.video) return;
-    if (!this.isTextureReady(record)) return;
-    const currentTime = record.video.currentTime || 0;
-    if (!forced && !record.needsTextureUpdate && Math.abs(currentTime - record.lastTextureTime) < 0.001) return;
-    record.texture.needsUpdate = true;
-    record.needsTextureUpdate = false;
-    record.lastTextureTime = currentTime;
-  }
-
-  private isTextureReady(record: TextureRecord | undefined) {
-    return Boolean(record?.isReady && record.video.readyState >= 2 && record.video.videoWidth > 0 && record.video.videoHeight > 0);
+    record.sequence.dispose();
   }
 
   private updateFinalUniforms() {
-    const records: TextureRecord[] = [];
     const visible = this.visibleSize();
     for (let index = 0; index < 3; index += 1) {
       const target = this.finalTargets[index];
       const record = this.finalRecords[index];
       const textureUniform = this.material.uniforms[`uFinalTexture${index}` as keyof typeof this.material.uniforms];
+      const frameUniform = this.material.uniforms[`uFinalFrame${index}` as keyof typeof this.material.uniforms]?.value as THREE.Vector4 | undefined;
       const flipUniform = this.material.uniforms[`uFinalFlip${index}` as keyof typeof this.material.uniforms];
       const rectUniform = this.material.uniforms[`uFinalRect${index}` as keyof typeof this.material.uniforms]?.value as THREE.Vector4 | undefined;
       const tintUniform = this.material.uniforms[`uFinalTint${index}` as keyof typeof this.material.uniforms]?.value as THREE.Color | undefined;
-      if (!textureUniform || !flipUniform || !rectUniform || !tintUniform) continue;
+      if (!textureUniform || !frameUniform || !flipUniform || !rectUniform || !tintUniform) continue;
 
       if (record && this.finalProgress > 0.001) {
-        this.seekRecord(record, target?.progress ?? Math.min(0.88, 0.22 + index * 0.23));
-        records.push(record);
-        textureUniform.value = record.texture;
+        record.sequence.seek(target?.progress ?? Math.min(0.88, 0.22 + index * 0.23));
+        textureUniform.value = record.sequence.texture || this.emptyTexture;
+        frameUniform.copy(record.sequence.frameRect);
         flipUniform.value = record.source.flipY ? 1 : 0;
         tintUniform.set("#000000");
       } else {
         textureUniform.value = this.emptyTexture;
+        frameUniform.set(0, 0, 1, 1);
         flipUniform.value = 0;
         tintUniform.set("#000000");
       }
@@ -636,7 +470,6 @@ export class DotMorphRuntime {
         rectUniform.set(0, 0, 0, 0);
       }
     }
-    return records;
   }
 
   private buildGeometry(target: number) {

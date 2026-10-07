@@ -6,11 +6,11 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        source: "/dotmorph-assets/:file*.mp4",
+        source: "/dotmorph-assets/frames/:path*.webp",
         headers: [
           {
             key: "Cache-Control",
-            value: "public, max-age=86400",
+            value: "public, max-age=31536000, immutable",
           },
         ],
       },

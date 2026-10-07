@@ -2,7 +2,7 @@ export type DirectionName = "left" | "right" | "top" | "bottom" | "auto";
 
 export type Scene = {
   id: string;
-  clipSrc: string;
+  framesSrc: string;
   duration: number;
   depthGamma?: number;
   depthGammaEnd?: number | null;

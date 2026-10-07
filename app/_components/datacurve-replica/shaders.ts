@@ -7,6 +7,11 @@ export const vertexShader = `
   uniform sampler2D uFinalTexture0;
   uniform sampler2D uFinalTexture1;
   uniform sampler2D uFinalTexture2;
+  uniform vec4 uFrameA;
+  uniform vec4 uFrameB;
+  uniform vec4 uFinalFrame0;
+  uniform vec4 uFinalFrame1;
+  uniform vec4 uFinalFrame2;
   uniform vec2 uTexelA;
   uniform vec2 uTexelB;
   uniform float uFlipA;
@@ -126,7 +131,11 @@ export const vertexShader = `
     return pow(value, 0.92);
   }
 
-  float sobelEdge(sampler2D textureMap, vec2 uv, vec2 texel) {
+  vec4 sampleDepth(sampler2D textureMap, vec2 uv, vec4 frame) {
+    return texture2D(textureMap, frame.xy + clamp(uv, vec2(0.0), vec2(1.0)) * frame.zw);
+  }
+
+  float sobelEdge(sampler2D textureMap, vec2 uv, vec2 texel, vec4 frame) {
     // Single-scale Sobel at the tightest possible radius (1 texel). Wider radii
     // smear the edge across multiple pixels and produce thick outlines. We also
     // subtract the local mean - this thins responses to the actual gradient peak
@@ -137,15 +146,15 @@ export const vertexShader = `
     vec2 px = texel;
     float lowQ = step(0.5, uLowQuality);
     float fullQ = 1.0 - lowQ;
-    float tc = sourceValue(texture2D(textureMap, clamp(uv + px * vec2(0.0, -1.0), vec2(0.0), vec2(1.0))).rgb);
-    float ml = sourceValue(texture2D(textureMap, clamp(uv + px * vec2(-1.0, 0.0), vec2(0.0), vec2(1.0))).rgb);
-    float mc = sourceValue(texture2D(textureMap, uv).rgb);
-    float mr = sourceValue(texture2D(textureMap, clamp(uv + px * vec2(1.0, 0.0), vec2(0.0), vec2(1.0))).rgb);
-    float bc = sourceValue(texture2D(textureMap, clamp(uv + px * vec2(0.0, 1.0), vec2(0.0), vec2(1.0))).rgb);
-    float tl = fullQ * sourceValue(texture2D(textureMap, clamp(uv + px * vec2(-1.0, -1.0), vec2(0.0), vec2(1.0))).rgb);
-    float tr = fullQ * sourceValue(texture2D(textureMap, clamp(uv + px * vec2(1.0, -1.0), vec2(0.0), vec2(1.0))).rgb);
-    float bl = fullQ * sourceValue(texture2D(textureMap, clamp(uv + px * vec2(-1.0, 1.0), vec2(0.0), vec2(1.0))).rgb);
-    float br = fullQ * sourceValue(texture2D(textureMap, clamp(uv + px * vec2(1.0, 1.0), vec2(0.0), vec2(1.0))).rgb);
+    float tc = sourceValue(sampleDepth(textureMap, clamp(uv + px * vec2(0.0, -1.0), vec2(0.0), vec2(1.0)), frame).rgb);
+    float ml = sourceValue(sampleDepth(textureMap, clamp(uv + px * vec2(-1.0, 0.0), vec2(0.0), vec2(1.0)), frame).rgb);
+    float mc = sourceValue(sampleDepth(textureMap, uv, frame).rgb);
+    float mr = sourceValue(sampleDepth(textureMap, clamp(uv + px * vec2(1.0, 0.0), vec2(0.0), vec2(1.0)), frame).rgb);
+    float bc = sourceValue(sampleDepth(textureMap, clamp(uv + px * vec2(0.0, 1.0), vec2(0.0), vec2(1.0)), frame).rgb);
+    float tl = fullQ * sourceValue(sampleDepth(textureMap, clamp(uv + px * vec2(-1.0, -1.0), vec2(0.0), vec2(1.0)), frame).rgb);
+    float tr = fullQ * sourceValue(sampleDepth(textureMap, clamp(uv + px * vec2(1.0, -1.0), vec2(0.0), vec2(1.0)), frame).rgb);
+    float bl = fullQ * sourceValue(sampleDepth(textureMap, clamp(uv + px * vec2(-1.0, 1.0), vec2(0.0), vec2(1.0)), frame).rgb);
+    float br = fullQ * sourceValue(sampleDepth(textureMap, clamp(uv + px * vec2(1.0, 1.0), vec2(0.0), vec2(1.0)), frame).rgb);
     float gx = -tl - 2.0 * ml - bl + tr + 2.0 * mr + br;
     float gy = -tl - 2.0 * tc - tr + bl + 2.0 * bc + br;
     // Compensate for missing corner energy when lowQ - bump the cross-only
@@ -165,8 +174,8 @@ export const vertexShader = `
   void main() {
     vec2 uvA = vec2(aUv.x, mix(aUv.y, 1.0 - aUv.y, uFlipA));
     vec2 uvB = vec2(aUv.x, mix(aUv.y, 1.0 - aUv.y, uFlipB));
-    vec4 sampleA = texture2D(uTextureA, uvA);
-    vec4 sampleB = texture2D(uTextureB, uvB);
+    vec4 sampleA = sampleDepth(uTextureA, uvA, uFrameA);
+    vec4 sampleB = sampleDepth(uTextureB, uvB, uFrameB);
     float morphRaw = clamp(uMorph, 0.0, 1.0);
     float morph = ease(morphRaw);
     float intro = ease(clamp(uIntroT, 0.0, 1.0));
@@ -190,9 +199,9 @@ export const vertexShader = `
     vec2 uvFinal0 = vec2(finalUv.x, mix(finalUv.y, 1.0 - finalUv.y, uFinalFlip0));
     vec2 uvFinal1 = vec2(finalUv.x, mix(finalUv.y, 1.0 - finalUv.y, uFinalFlip1));
     vec2 uvFinal2 = vec2(finalUv.x, mix(finalUv.y, 1.0 - finalUv.y, uFinalFlip2));
-    vec4 sampleFinal0 = texture2D(uFinalTexture0, uvFinal0);
-    vec4 sampleFinal1 = texture2D(uFinalTexture1, uvFinal1);
-    vec4 sampleFinal2 = texture2D(uFinalTexture2, uvFinal2);
+    vec4 sampleFinal0 = sampleDepth(uFinalTexture0, uvFinal0, uFinalFrame0);
+    vec4 sampleFinal1 = sampleDepth(uFinalTexture1, uvFinal1, uFinalFrame1);
+    vec4 sampleFinal2 = sampleDepth(uFinalTexture2, uvFinal2, uFinalFrame2);
     vec3 finalRgb = sampleFinal0.rgb * final0 + sampleFinal1.rgb * final1 + sampleFinal2.rgb * final2;
     float finalValue = sourceValue(finalRgb);
     vec3 finalTint = uFinalTint0 * final0 + uFinalTint1 * final1 + uFinalTint2 * final2;
@@ -202,8 +211,8 @@ export const vertexShader = `
     float finalSettle = ease(finalTravel);
     value = mix(value, finalValue, finalSettle);
 
-    float edgeA = morphRaw < 0.99 ? sobelEdge(uTextureA, uvA, uTexelA) : 0.0;
-    float edgeB = morphRaw > 0.01 ? sobelEdge(uTextureB, uvB, uTexelB) : 0.0;
+    float edgeA = morphRaw < 0.99 ? sobelEdge(uTextureA, uvA, uTexelA, uFrameA) : 0.0;
+    float edgeB = morphRaw > 0.01 ? sobelEdge(uTextureB, uvB, uTexelB, uFrameB) : 0.0;
     float relief = mix(edgeA, edgeB, morph);
     relief = mix(relief, max(relief, finalValue * sourceValue(finalRgb)), finalSettle * 0.42);
 

@@ -1,18 +1,21 @@
 # Dot Morph Assets
 
-Runtime assets for the DotMorph home-page prototype.
+The homepage samples **static WebP image atlases** to render its scroll-driven
+particle field. It creates no media elements and requests no video resources.
+Each atlas contains up to 16 frames in a 4 x 4 grid. The manifests preserve the
+source dimensions, frame rate, frame count, and duration. The shader samples
+inside each tile to prevent adjacent frames from bleeding across its edges.
 
-The original depth clips were untracked local assets. If the MP4 files are unavailable, the page falls back to the default scene configuration but the video morph effect will not render as originally authored.
+The loader prefetches the next atlas in the scroll direction and releases old
+textures. An inactive scene retains only its displayed atlas. Failed image
+loads keep the last displayed frame without issuing repeated failed requests.
 
-Current clip map:
-
-| File | Scene ID | Source concept | Duration |
+| Manifest directory | Scene | Dimensions | Frames |
 | --- | --- | --- | --- |
-| `depth-clip-02.mp4` | `analyst-copilot` | 电脑前思考、查阅 | 4.000000s |
-| `depth-clip-03-tooling.mp4` | `prototype-making` | 机械工具与产品制造 | 4.066667s |
-| `depth-clip-04.mp4` | `knowledge-structure` | 建楼过程 | 6.041667s |
-| `depth-clip-05.mp4` | `industry-map` | 城市 | 3.993832s |
+| frames/analyst-copilot | 电脑前思考、查阅 | 640 x 360 | 120 |
+| frames/prototype-making | 机械工具与产品制造 | 640 x 360 | 61 |
+| frames/knowledge-structure | 建楼过程 | 688 x 464 | 145 |
+| frames/industry-map | 城市 | 640 x 360 | 119 |
 
-`depth-clip-03-tooling.mp4` is a user-provided grayscale, high-contrast depth clip.
-It is already 180-degree rotated and web-sized, so it is used without
-additional transcoding.
+Atlas filenames contain a content hash and can be cached immutably. The JSON
+manifests are revalidated so an updated deployment can reference new images.

@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "depth:build": "node scripts/build-depth-frames.mjs",
+    "test:depth": "node --test tests/depth-frame-sequence.test.mjs"
   },
   "dependencies": {
     "@vercel/analytics": "^2.0.1",
@@ -21,6 +23,7 @@
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
     "@types/three": "^0.184.1",
+    "sharp": "0.34.5",
     "typescript": "^5.9.3"
   },
   "overrides": {

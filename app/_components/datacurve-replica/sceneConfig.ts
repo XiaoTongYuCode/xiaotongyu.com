@@ -10,7 +10,7 @@ const defaultTransitionSpeed = 0.03;
 export const defaultScenes: Scene[] = [
   {
     id: "analyst-copilot",
-    clipSrc: "/dotmorph-assets/depth-clip-02.mp4",
+    framesSrc: "/dotmorph-assets/frames/analyst-copilot/sequence.json",
     duration: 4,
     depthGamma: 1,
     enterDirection: "auto",
@@ -20,7 +20,7 @@ export const defaultScenes: Scene[] = [
   },
   {
     id: "prototype-making",
-    clipSrc: "/dotmorph-assets/depth-clip-03-tooling.mp4",
+    framesSrc: "/dotmorph-assets/frames/prototype-making/sequence.json",
     duration: 4.066667,
     depthGamma: 1,
     enterDirection: "auto",
@@ -31,7 +31,7 @@ export const defaultScenes: Scene[] = [
   },
   {
     id: "knowledge-structure",
-    clipSrc: "/dotmorph-assets/depth-clip-04.mp4",
+    framesSrc: "/dotmorph-assets/frames/knowledge-structure/sequence.json",
     duration: 6.041667,
     depthGamma: 0.2,
     enterDirection: "auto",
@@ -41,7 +41,7 @@ export const defaultScenes: Scene[] = [
   },
   {
     id: "industry-map",
-    clipSrc: "/dotmorph-assets/depth-clip-05.mp4",
+    framesSrc: "/dotmorph-assets/frames/industry-map/sequence.json",
     duration: 3.993832,
     depthGamma: 0.4,
     enterDirection: "auto",
@@ -90,11 +90,11 @@ function normalizeSceneConfig(config: DepthSceneConfig): Scene[] {
   clips.forEach((clip, index) => {
     const fallback = defaultScenes[index % defaultScenes.length];
     const duration = clip.canonicalDuration || clip.sourceDuration || fallback.duration;
-    const src = clip.src || fallback.clipSrc;
-    if (!src) return;
+    const src = typeof clip.src === "string" && /^\/dotmorph-assets\/frames\/[\w/-]+\.json$/.test(clip.src)
+      ? clip.src : fallback.framesSrc;
     normalized.push({
       id: clip.id || fallback.id || `depth-${index + 1}`,
-      clipSrc: src,
+      framesSrc: src,
       duration,
       depthGamma: clampNumber(clip.depthGamma, 0.2, 3, fallback.depthGamma ?? 1),
       depthGammaEnd: Number.isFinite(clip.depthGammaEnd) ? clampNumber(clip.depthGammaEnd, 0.2, 3, fallback.depthGammaEnd ?? 1) : null,

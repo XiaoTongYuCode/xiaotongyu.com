@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "width": 688,
+  "height": 464,
+  "columns": 4,
+  "rows": 4,
+  "frameCount": 145,
+  "fps": 24,
+  "duration": 6.041667,
+  "atlases": [
+    "/dotmorph-assets/frames/knowledge-structure/atlas-001-9f4bba5a3baa.webp",
+    "/dotmorph-assets/frames/knowledge-structure/atlas-002-a19955d7b904.webp",
+    "/dotmorph-assets/frames/knowledge-structure/atlas-003-e31fa51f09d2.webp",
+    "/dotmorph-assets/frames/knowledge-structure/atlas-004-da6361f2d4a0.webp",
+    "/dotmorph-assets/frames/knowledge-structure/atlas-005-11f164b8a6b0.webp",
+    "/dotmorph-assets/frames/knowledge-structure/atlas-006-b5a78acc4d87.webp",
+    "/dotmorph-assets/frames/knowledge-structure/atlas-007-6e67c682e06c.webp",
+    "/dotmorph-assets/frames/knowledge-structure/atlas-008-83ce74b85720.webp",
+    "/dotmorph-assets/frames/knowledge-structure/atlas-009-faae947c3048.webp",
+    "/dotmorph-assets/frames/knowledge-structure/atlas-010-e993192dc7cc.webp"
+  ]
+}

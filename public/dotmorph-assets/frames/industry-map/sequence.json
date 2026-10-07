@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "width": 640,
+  "height": 360,
+  "columns": 4,
+  "rows": 4,
+  "frameCount": 119,
+  "fps": 30,
+  "duration": 3.993832,
+  "atlases": [
+    "/dotmorph-assets/frames/industry-map/atlas-001-aeea4cde916f.webp",
+    "/dotmorph-assets/frames/industry-map/atlas-002-993a7cdf5108.webp",
+    "/dotmorph-assets/frames/industry-map/atlas-003-751d90073da1.webp",
+    "/dotmorph-assets/frames/industry-map/atlas-004-78f5fb3b5d6f.webp",
+    "/dotmorph-assets/frames/industry-map/atlas-005-a3c42819d0b0.webp",
+    "/dotmorph-assets/frames/industry-map/atlas-006-5454f639dbb3.webp",
+    "/dotmorph-assets/frames/industry-map/atlas-007-e8467ff23e1d.webp",
+    "/dotmorph-assets/frames/industry-map/atlas-008-ddd81fbe9c45.webp"
+  ]
+}
