@@ -1,7 +1,15 @@
 # Dot Morph Assets
 
-The homepage samples **static WebP image atlases** to render its scroll-driven
-particle field. It creates no media elements and requests no video resources.
+The homepage prefers **WebCodecs depth packets** in `codecs/` to render its
+scroll-driven particle field. Each packet retains the original compressed H.264
+samples in a custom container. A dedicated Worker downloads each packet once
+and decodes bounded frame windows; Three.js renders the resulting VideoFrames
+without creating an HTML media element. Packet filenames contain a content
+hash and are served as `application/octet-stream` with immutable caching.
+
+Unsupported browsers and decoder failures fall back to **static WebP atlases**.
+Use `?depth=atlas` to force this path for comparison. The fallback works as follows:
+
 Each atlas contains up to 16 frames in a 4 x 4 grid. The manifests preserve the
 source dimensions, frame rate, frame count, and duration. The shader samples
 inside each tile to prevent adjacent frames from bleeding across its edges.

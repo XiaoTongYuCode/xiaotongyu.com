@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { DepthFrameSequence } from "./DepthFrameSequence";
+import { AdaptiveDepthSequence } from "./AdaptiveDepthSequence";
 import { defaultScenes } from "./sceneConfig";
 import { fragmentShader, vertexShader } from "./shaders";
 import { clamp, mixNumber, resolveTimeline } from "./timeline";
@@ -17,7 +17,7 @@ type TextureRecord = {
   loadFailed: boolean;
   readyPromise: Promise<{ ok: boolean; reason: string }>;
   source: ClipSource;
-  sequence: DepthFrameSequence;
+  sequence: AdaptiveDepthSequence;
 };
 
 export type AvoidRect = {
@@ -397,7 +397,7 @@ export class DotMorphRuntime {
   }
 
   private createRecord(source: ClipSource, isFirst = false): TextureRecord {
-    const sequence = new DepthFrameSequence();
+    const sequence = new AdaptiveDepthSequence();
     const record: TextureRecord = {
       aspect: this.sourceAspect,
       duration: source.duration || 1,

@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "depth:build": "node scripts/build-depth-frames.mjs",
-    "test:depth": "node --test tests/depth-frame-sequence.test.mjs"
+    "depth:codecs": "node scripts/build-depth-codecs.mjs",
+    "test:depth": "node --test tests/depth-frame-sequence.test.mjs tests/depth-codecs.test.mjs"
   },
   "dependencies": {
     "@vercel/analytics": "^2.0.1",

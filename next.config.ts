@@ -6,6 +6,14 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        source: "/dotmorph-assets/codecs/:path*.depth",
+        headers: [
+          { key: "Content-Type", value: "application/octet-stream" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+        ],
+      },
+      {
         source: "/dotmorph-assets/frames/:path*.webp",
         headers: [
           {
