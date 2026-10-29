@@ -13,7 +13,6 @@ export const enUS: LocaleMessages = {
       ariaMain: "Main navigation",
       ariaMobile: "Mobile navigation",
       work: "Work",
-      game: "Game",
       about: "About",
       contact: "Contact",
       openMenu: "Open menu",
@@ -46,7 +45,7 @@ export const enUS: LocaleMessages = {
       paragraphs: [
         "I am Xiaotong Yu (Chinese name: 肖彤宇), also known online as XiaoTongYu. xiaotongyu.com is my personal space on the web—a place for product practice, AI experiments, engineering work, and an ongoing exploration of interface and interaction.",
         "I like turning early ideas into products people can actually use. From information structure and interaction feedback to maintainable implementation, I try to make each step clear, dependable, and grounded in real tasks.",
-        "Recent work includes CornAgent, an AI assistant for conversations, search, and tool-based tasks; Myrisle, a privacy-first local AI diary; and Petspace, a pet community built around everyday sharing.",
+        "Recent work includes Mewa, a proactive AI companion and a space for friends; CornAgent, an assistant for search and tool-based tasks; Myrisle, a privacy-first local AI diary; and Petspace, a pet community built around everyday sharing.",
         "In AI applications, I care about how models connect with retrieval, tools, and human review to become workflows people want to return to—not just polished one-off demos.",
       ],
       closing: "New work, experiments, and engineering notes will keep growing here.",
@@ -54,10 +53,23 @@ export const enUS: LocaleMessages = {
     },
     work: {
       heading: "Selected work",
-      intro:
-        "A few recent products and experiments across AI assistants, local AI, and community software.",
       itemAria: "Open project",
+      visit: "Visit project",
+      filmLabel: "Mewa — proactive AI companion. Product film, 29 seconds, Chinese text with music.",
+      filmError: "The film could not be loaded.",
+      openFilm: "Open video directly",
       items: [
+        {
+          title: "Mewa",
+          description:
+            "A companion that remembers what matters, brings fresh ideas, and follows through on your goals. Share everyday moments with friends, with AI in the conversation.",
+          kind: "Proactive AI · Friends · Shared conversations",
+          url: "https://mewa.site/welcome/",
+          media: {
+            preview: "/work/mewa-preview-en.webp",
+            video: "/work/mewa-film-v8.mp4",
+          },
+        },
         {
           title: "CornAgent",
           description:

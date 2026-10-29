@@ -5,6 +5,10 @@ export type WorkItemCopy = {
   description: string;
   kind: string;
   url: string;
+  media?: {
+    preview: string;
+    video: string;
+  };
 };
 
 export type HomeCopy = {
@@ -18,7 +22,6 @@ export type HomeCopy = {
     ariaMain: string;
     ariaMobile: string;
     work: string;
-    game: string;
     about: string;
     contact: string;
     openMenu: string;
@@ -51,8 +54,11 @@ export type HomeCopy = {
   };
   work: {
     heading: string;
-    intro: string;
     itemAria: string;
+    visit: string;
+    filmLabel: string;
+    filmError: string;
+    openFilm: string;
     items: WorkItemCopy[];
   };
   footer: {

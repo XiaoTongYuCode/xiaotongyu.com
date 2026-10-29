@@ -13,7 +13,6 @@ export const zhCN: LocaleMessages = {
       ariaMain: "主导航",
       ariaMobile: "移动端导航",
       work: "作品",
-      game: "游戏",
       about: "关于",
       contact: "联系",
       openMenu: "打开菜单",
@@ -45,7 +44,7 @@ export const zhCN: LocaleMessages = {
       paragraphs: [
         "我是肖彤宇，英文名 Xiaotong Yu，常用网络名称 XiaoTongYu。xiaotongyu.com 是我在互联网上的一块个人空间，用来整理产品实践、AI 实验、工程作品，以及我对界面与交互的持续探索。",
         "我喜欢把早期想法变成真正能使用的产品：从信息结构、交互反馈到可维护实现，尽量让每一步都清楚、可靠，并服务于实际任务。",
-        "最近的作品包括 CornAgent——支持对话、搜索与工具调用的 AI 助手，Myrisle——隐私优先的本地 AI 日记，以及 Petspace——围绕日常分享的宠物社区。",
+        "最近的作品包括 Mewa——主动关心你的 AI 伙伴与朋友社区，CornAgent——支持搜索与工具调用的 AI 助手，Myrisle——隐私优先的本地 AI 日记，以及 Petspace——围绕日常分享的宠物社区。",
         "在 AI 应用里，我更关心模型如何与检索、工具和人工复核连接起来，最终成为人们愿意反复使用的工作流，而不只是一次漂亮的演示。",
       ],
       closing: "新的作品、实验与工程笔记还会继续长出来。",
@@ -53,10 +52,23 @@ export const zhCN: LocaleMessages = {
     },
     work: {
       heading: "精选作品",
-      intro:
-        "近期围绕 AI 助手、本地 AI 与社区产品完成的几个项目与实验。",
       itemAria: "打开项目",
+      visit: "访问项目",
+      filmLabel: "Mewa 主动智能宣传片，29 秒，中文画面与配乐",
+      filmError: "暂时无法加载宣传片。",
+      openFilm: "直接打开视频",
       items: [
+        {
+          title: "Mewa",
+          description:
+            "记得你在意的事，主动带来新点子，持续跟进你的目标。也让朋友和 AI 加入同一场对话，从今天的小事，聊到下一个好主意。",
+          kind: "主动智能 · 朋友社区 · 一起聊天",
+          url: "https://mewa.site/welcome/",
+          media: {
+            preview: "/work/mewa-preview-zh.webp",
+            video: "/work/mewa-film-v8.mp4",
+          },
+        },
         {
           title: "CornAgent",
           description:

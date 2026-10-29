@@ -137,7 +137,6 @@ export function SiteNav({ copy, languageSwitcher }: SiteNavProps) {
   const mobileMenuTabIndex = menuOpen ? 0 : -1;
   const navLinks = [
     { href: "/work", label: copy.nav.work },
-    { href: "/game/1", label: copy.nav.game },
     { href: "/#about", label: copy.nav.about },
   ] as const;
 
@@ -149,7 +148,7 @@ export function SiteNav({ copy, languageSwitcher }: SiteNavProps) {
         </a>
         <div>
           {navLinks.map((link) => (
-            <a href={link.href} key={link.href}>
+            <a href={link.href} key={link.href} aria-current={pathname === link.href ? "page" : undefined}>
               {link.label}
             </a>
           ))}
@@ -182,7 +181,7 @@ export function SiteNav({ copy, languageSwitcher }: SiteNavProps) {
         </div>
         <div className="mobile-menu" data-open={menuOpen ? "true" : undefined} aria-hidden={!menuOpen}>
           {navLinks.map((link) => (
-            <a href={link.href} key={link.href} tabIndex={mobileMenuTabIndex} onClick={closeMenu}>
+            <a href={link.href} key={link.href} tabIndex={mobileMenuTabIndex} onClick={closeMenu} aria-current={pathname === link.href ? "page" : undefined}>
               {link.label}
             </a>
           ))}
@@ -279,7 +278,6 @@ export function SiteFooter({ copy }: SiteFooterProps) {
             <div>
               <span>{copy.footer.links}</span>
               <a href="/work">{copy.nav.work}</a>
-              <a href="/game/1">{copy.nav.game}</a>
               <a href="/#about">{copy.nav.about}</a>
               <a
                 href={CONTACT_MAILTO}

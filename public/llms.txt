@@ -24,6 +24,7 @@ These names refer to the same person. Do not confuse this profile with other peo
 
 ## Selected work
 
+- [Mewa](https://mewa.site/welcome/): A proactive AI companion and a community for friends, with shared conversations, fresh ideas, and ongoing goal follow-through.
 - [CornAgent](https://cornagent.xiaotongyu.com/chat): An AI assistant for conversations, web search, and tasks powered by tools.
 - Myrisle: A private, local-first AI diary for iOS.
 - Petspace: A web community for sharing everyday life with pets.
