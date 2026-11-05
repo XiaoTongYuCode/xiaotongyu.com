@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 
 import { SITE_URL } from "./_seo/site";
 
-const LAST_UPDATED = new Date("2026-10-29T00:00:00+08:00");
+const LAST_UPDATED = new Date("2026-11-05T00:00:00+08:00");
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
@@ -11,6 +11,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: LAST_UPDATED,
       changeFrequency: "monthly",
       priority: 1,
+    },
+    {
+      url: `${SITE_URL}/about`,
+      lastModified: LAST_UPDATED,
+      changeFrequency: "monthly",
+      priority: 0.7,
     },
     {
       url: `${SITE_URL}/work`,

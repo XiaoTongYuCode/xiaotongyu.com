@@ -33,6 +33,7 @@ function toRuntimeSources(config: SceneConfig): ClipSource[] {
 
 export function initRuntime(canvas: HTMLCanvasElement, section: HTMLElement, config: SceneConfig, onState: (state: SceneState) => void, onLoad: (ready: boolean) => void): Runtime {
   const runtime = new DotMorphRuntime(canvas);
+  const stickyElement = section.querySelector<HTMLElement>(".dotmorph-sticky");
   const introElement = section.querySelector<HTMLElement>(".dotmorph-intro");
   const lineField = section.querySelector<HTMLElement>(".hero-line-field");
   const storyElement = section.querySelector<HTMLElement>(".dotmorph-story");
@@ -60,8 +61,10 @@ export function initRuntime(canvas: HTMLCanvasElement, section: HTMLElement, con
   const timelineStart = 0.076;
 
   const resize = () => {
-    sectionTop = section.offsetTop;
-    sectionScrollRange = Math.max(1, section.offsetHeight - window.innerHeight);
+    const stickyTop = stickyElement ? parseFloat(getComputedStyle(stickyElement).top) || 0 : 0;
+    // Progress spans the stage's full pinned travel below the shared header.
+    sectionTop = section.getBoundingClientRect().top + window.scrollY - stickyTop;
+    sectionScrollRange = Math.max(1, section.offsetHeight - (stickyElement?.offsetHeight ?? window.innerHeight));
     void runtime.resize();
   };
 
@@ -160,6 +163,8 @@ export function initRuntime(canvas: HTMLCanvasElement, section: HTMLElement, con
   window.addEventListener("resize", resize);
   window.addEventListener("scroll", handleScroll, { passive: true });
   window.addEventListener("pointermove", pointer, { passive: true });
+  const sizeObserver = new ResizeObserver(resize);
+  if (stickyElement) sizeObserver.observe(stickyElement);
   resize();
   applyVisualState(currentProgress());
   runtime.firstReady().then((result) => {
@@ -200,6 +205,7 @@ export function initRuntime(canvas: HTMLCanvasElement, section: HTMLElement, con
       window.removeEventListener("pointermove", pointer);
       document.removeEventListener("visibilitychange", visibility);
       observer?.disconnect();
+      sizeObserver.disconnect();
       if (window.__morph === runtime) window.__morph = undefined;
       runtime.destroy();
     },

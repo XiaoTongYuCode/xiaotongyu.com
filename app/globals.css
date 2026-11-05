@@ -1,3 +1,5 @@
+@import "./_components/site/handwriting-fonts.css";
+
 @font-face {
   font-family: "Exposure";
   src: url("/font/exposure_var.woff2") format("woff2");
@@ -22,17 +24,33 @@
   box-sizing: border-box;
 }
 
+:root {
+  --site-gutter: 5.6%;
+  --site-font: "Helvetica Neue", Helvetica, Arial, "PingFang SC", sans-serif;
+  --font-handwriting-en: "Caveat", var(--site-font);
+  --font-handwriting-zh: "XTY Handwriting SC", "Kaiti SC", KaiTi, var(--site-font);
+  --font-handwriting: var(--font-handwriting-en);
+  --surface-default: #f7f7f7;
+  --surface-secondary: #e8e8e5;
+  --text-primary: #20221f;
+  --text-secondary: #6c7068;
+}
+
+:root:lang(zh-CN) {
+  --font-handwriting: var(--font-handwriting-zh);
+}
+
 html {
-  background: #f8f7f5;
+  background: var(--surface-default);
   scroll-behavior: smooth;
 }
 
 body {
   margin: 0;
   min-width: 0;
-  background: #f8f7f5;
-  color: #1c1612;
-  font-family: "Suisse Intl", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  background: var(--surface-default);
+  color: var(--text-primary);
+  font-family: var(--site-font);
   font-weight: 400;
   letter-spacing: 0;
   -webkit-font-smoothing: antialiased;
@@ -43,6 +61,11 @@ a {
   color: inherit;
   text-decoration: none;
 }
+
+::selection { color: #fff; background: #378366; }
+a:focus-visible, button:focus-visible { outline: 2px solid #24775b; outline-offset: 6px; }
+button { font: inherit; }
+@media (max-width: 700px) { :root { --site-gutter: 6%; } }
 
 canvas,
 video {

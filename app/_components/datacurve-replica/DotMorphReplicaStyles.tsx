@@ -1,6 +1,13 @@
 export function DotMorphReplicaStyles() {
   return (
     <style jsx global>{`
+      .about-page > header {
+        position: sticky;
+        top: 0;
+        background: rgba(247, 247, 247, 0.88);
+        backdrop-filter: blur(12px);
+      }
+
       .defining-intelligence-section {
         position: relative;
         z-index: 20;
@@ -12,9 +19,9 @@ export function DotMorphReplicaStyles() {
       .dotmorph-sticky {
         --dotmorph-canvas-opacity: 0;
         position: sticky;
-        top: 0;
+        top: var(--about-header-height, 0px);
         isolation: isolate;
-        height: 111.12vh;
+        height: calc(100svh - var(--about-header-height, 0px));
         width: 100%;
         overflow: hidden;
         background: var(--surface-default);
@@ -102,26 +109,16 @@ export function DotMorphReplicaStyles() {
         margin: 0;
         max-width: 100%;
         color: var(--text-primary);
-        font-family: "Exposure", "Suisse Intl", "Helvetica Neue", Helvetica, Arial, sans-serif;
+        font-family: var(--font-handwriting);
         font-size: clamp(52px, 4.7vw, 76px);
         font-weight: 400;
         line-height: 1.1;
-        letter-spacing: -0.04em;
+        letter-spacing: normal;
         text-wrap: balance;
       }
 
       :lang(zh-CN) .dotmorph-intro h1 {
         max-width: 980px;
-        font-family:
-          "XTY Hero Display",
-          "Noto Sans SC",
-          "Hiragino Sans GB",
-          "Microsoft YaHei",
-          "Noto Sans CJK SC",
-          "Suisse Intl",
-          "Helvetica Neue",
-          Arial,
-          sans-serif;
         font-size: clamp(48px, 4.35vw, 68px);
         font-weight: 400;
         line-height: 1.08;
@@ -132,7 +129,7 @@ export function DotMorphReplicaStyles() {
       .dotmorph-intro p {
         margin: 0;
         max-width: 565px;
-        color: rgba(23, 19, 16, 0.55);
+        color: var(--text-secondary);
         font-size: clamp(15px, 1.1vw, 17px);
         line-height: 1.31;
         letter-spacing: 0.01em;
@@ -158,33 +155,26 @@ export function DotMorphReplicaStyles() {
         align-items: center;
         justify-content: center;
         gap: 8px;
-        border-radius: 8px;
+        border-radius: 28px;
         padding: 12px 24px;
         font-size: 15px;
-        font-weight: 650;
+        font-weight: 400;
         line-height: 1;
-        transition:
-          background 180ms ease,
-          transform 180ms ease;
+        transition: background 180ms ease;
       }
 
       .dotmorph-actions a:first-child {
-        background: rgba(23, 19, 16, 0.86);
+        background: var(--text-primary);
         color: var(--text-invert);
-        outline: 2px solid rgba(255, 255, 255, 0.1);
-        outline-offset: -2px;
       }
 
       .dotmorph-actions a:last-child {
-        background: #ffffff;
+        background: var(--surface-secondary);
         color: var(--text-primary);
-        outline: 2px solid rgba(23, 19, 16, 0.12);
-        outline-offset: -2px;
       }
 
-      .dotmorph-actions a:active {
-        transform: scale(0.98);
-      }
+      .dotmorph-actions a:first-child:hover { background: #3b4437; }
+      .dotmorph-actions a:last-child:hover { background: #dededb; }
 
       .dotmorph-story {
         pointer-events: none;
@@ -207,7 +197,7 @@ export function DotMorphReplicaStyles() {
         max-width: 440px;
         text-align: right;
         color: var(--text-primary);
-        font-family: Georgia, "Times New Roman", serif;
+        font-family: var(--site-font);
         font-size: 40px;
         font-weight: 400;
         line-height: 1.2;
@@ -220,9 +210,7 @@ export function DotMorphReplicaStyles() {
         z-index: 30;
         scroll-margin-top: 96px;
         background: var(--surface-default);
-        margin-bottom: var(--footer-reveal-height);
         padding: 26vh 0 128px;
-        border-radius: 0 0 18px 18px;
         color: var(--text-primary);
       }
 
@@ -241,10 +229,9 @@ export function DotMorphReplicaStyles() {
       .section-kicker {
         margin: 0 auto;
         max-width: 720px;
-        font-family: Georgia, "Times New Roman", serif;
+        font-family: var(--font-handwriting);
         font-size: 44px;
         line-height: 1.18;
-        letter-spacing: -0.6px;
       }
 
       .copy-stack {
@@ -252,7 +239,7 @@ export function DotMorphReplicaStyles() {
         max-width: 720px;
         display: grid;
         gap: 28px;
-        color: rgba(23, 19, 16, 0.7);
+        color: var(--text-secondary);
         font-size: 18px;
         line-height: 1.6;
       }
@@ -262,8 +249,8 @@ export function DotMorphReplicaStyles() {
       }
 
       .copy-stack a {
-        color: #1d4ed8;
-        font-weight: 650;
+        color: #24775b;
+        font-weight: 400;
       }
 
       @keyframes dotmorph-loading-pulse {
@@ -290,19 +277,15 @@ export function DotMorphReplicaStyles() {
       }
 
       @media (max-width: 1024px) {
-        .dotmorph-sticky {
-          height: 100svh;
-        }
-
         .dotmorph-canvas-mask {
           inset: auto 0 auto;
-          top: calc(50vh - 65vw);
+          top: calc(50% - 65vw);
           height: 65vw;
         }
 
         .dotmorph-intro {
           align-items: flex-start;
-          padding: 72px 24px 0;
+          padding: 0 24px;
           text-align: left;
         }
 
@@ -333,7 +316,7 @@ export function DotMorphReplicaStyles() {
         }
 
         .dotmorph-story {
-          top: 50vh;
+          top: 50%;
           right: 0;
           bottom: 0;
           left: 0;

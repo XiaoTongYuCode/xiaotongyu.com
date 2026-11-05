@@ -5,9 +5,9 @@ export const enUS: LocaleMessages = {
     localeName: "English",
     htmlLang: "en",
     meta: {
-      title: "肖彤宇（Xiaotong Yu）",
+      title: "肖彤宇（TongYu Xiao）",
       description:
-        "The personal website of Xiaotong Yu (肖彤宇), featuring product engineering, AI applications, creative coding, and thoughtful web experiments.",
+        "The personal website of TongYu Xiao (肖彤宇), featuring product engineering, AI applications, creative coding, and thoughtful web experiments.",
     },
     nav: {
       ariaMain: "Main navigation",
@@ -32,8 +32,8 @@ export const enUS: LocaleMessages = {
         "Copy failed. Please copy manually: work@xiaotongyu.com",
     },
     hero: {
-      sectionLabel: "Software engineer / Personal portfolio",
-      title: "Building useful products, AI tools, and web experiences.",
+      sectionLabel: "About TongYu Xiao",
+      title: "I’m TongYu Xiao.",
       subtitle:
         "A software engineer based in Beijing, working across product interfaces, AI workflows, and thoughtful web experiments.",
       primaryCta: "Get in touch",
@@ -43,7 +43,7 @@ export const enUS: LocaleMessages = {
       kicker:
         "Good software often comes from careful choices, steady iteration, and respect for the details.",
       paragraphs: [
-        "I am Xiaotong Yu (Chinese name: 肖彤宇), also known online as XiaoTongYu. xiaotongyu.com is my personal space on the web—a place for product practice, AI experiments, engineering work, and an ongoing exploration of interface and interaction.",
+        "I am TongYu Xiao (Chinese name: 肖彤宇), also known online as XiaoTongYu. xiaotongyu.com is my personal space on the web—a place for product practice, AI experiments, engineering work, and an ongoing exploration of interface and interaction.",
         "I like turning early ideas into products people can actually use. From information structure and interaction feedback to maintainable implementation, I try to make each step clear, dependable, and grounded in real tasks.",
         "Recent work includes Mewa, a proactive AI companion and a space for friends; CornAgent, an assistant for search and tool-based tasks; Myrisle, a privacy-first local AI diary; and Petspace, a pet community built around everyday sharing.",
         "In AI applications, I care about how models connect with retrieval, tools, and human review to become workflows people want to return to—not just polished one-off demos.",

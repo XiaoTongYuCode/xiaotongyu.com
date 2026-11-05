@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { DotMorphReplicaStyles } from "./DotMorphReplicaStyles";
 import { HeroLineField } from "./HeroLineField";
 import { defaultSceneConfig, loadDepthSceneConfig } from "./sceneConfig";
@@ -29,6 +29,24 @@ export default function DotMorphReplica() {
       })),
     [activeScenes, copy.scenes],
   );
+
+  useLayoutEffect(() => {
+    const page = sectionRef.current?.closest<HTMLElement>(".about-page");
+    const header = page?.querySelector("header");
+    if (!page || !header) return;
+
+    const measureHeader = () => {
+      page.style.setProperty("--about-header-height", `${header.getBoundingClientRect().height}px`);
+    };
+    measureHeader();
+    const observer = new ResizeObserver(measureHeader);
+    observer.observe(header);
+    return () => {
+      observer.disconnect();
+      page.style.removeProperty("--about-header-height");
+    };
+  }, []);
+
   useEffect(() => {
     let mounted = true;
     loadDepthSceneConfig()
@@ -63,7 +81,7 @@ export default function DotMorphReplica() {
   }, [sceneConfig]);
 
   return (
-    <main className="dotmorph-page">
+    <main className="dotmorph-page about-page">
       <SiteNav copy={copy} languageSwitcher={languageSwitcher} />
 
       <section ref={sectionRef} className="defining-intelligence-section" aria-label={copy.hero.sectionLabel}>

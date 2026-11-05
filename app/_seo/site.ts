@@ -1,9 +1,11 @@
+import { DISPLAY_NAME } from "../_components/site/identity";
+
 export const SITE_URL = "https://www.xiaotongyu.com";
 export const PERSON_URL = `${SITE_URL}/`;
 export const PERSON_ID = `${SITE_URL}/#person`;
 
 export const PERSON_NAME_ZH = "肖彤宇";
-export const PERSON_NAME_EN = "Xiaotong Yu";
+export const PERSON_NAME_EN = DISPLAY_NAME;
 export const PERSON_HANDLE = "XiaoTongYu";
 
 export const PERSON_SAME_AS = [
@@ -12,7 +14,7 @@ export const PERSON_SAME_AS = [
 ] as const;
 
 export const PERSON_DESCRIPTION =
-  "肖彤宇（Xiaotong Yu）是常驻北京的软件工程师，专注于产品工程、AI 应用、创意编程与网页体验。";
+  "肖彤宇（TongYu Xiao）是常驻北京的软件工程师，专注于产品工程、AI 应用、创意编程与网页体验。";
 
 export const personJsonLd = {
   "@type": "Person",

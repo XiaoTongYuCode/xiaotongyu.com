@@ -2,53 +2,44 @@ export function WorkPageStyles() {
   return (
     <style jsx global>{`
       .work-page {
-        background: var(--surface-invert);
+        --site-content-inset: max(var(--site-gutter), calc((100% - 1300px) / 2));
+        background: var(--surface-default);
       }
 
       .work-page-surface {
         position: relative;
         z-index: 1;
-        min-height: 100vh;
-        margin-bottom: var(--footer-reveal-height);
-        border-radius: 0 0 18px 18px;
+        min-height: calc(100svh - 80px);
         background: var(--surface-default);
         color: var(--text-primary);
       }
 
       .work-page-content {
-        width: min(100% - 96px, 1280px);
+        width: calc(100% - var(--site-gutter) * 2);
+        max-width: 1300px;
         margin: 0 auto;
-        padding: 128px 0 120px;
+        padding: 72px 0 110px;
       }
 
       .work-page-heading {
-        margin-bottom: 32px;
-      }
-
-      .work-page-heading h1 {
-        margin: 0;
-        font-family: "Exposure", Georgia, "Times New Roman", serif;
-        font-size: 42px;
-        font-weight: 600;
-        line-height: 1.15;
-        letter-spacing: -0.035em;
-      }
-
-      :lang(zh-CN) .work-page-heading h1 {
-        font-family: "Noto Serif CJK SC", "Songti SC", "STSong", Georgia, serif;
-        font-weight: 520;
-        letter-spacing: -0.04em;
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
       }
 
       .work-page-list {
         margin: 0;
         padding: 0;
-        border-top: 1px solid rgba(23, 19, 16, 0.18);
         list-style: none;
       }
 
       .work-page-list > li {
-        border-bottom: 1px solid rgba(23, 19, 16, 0.18);
+        border-bottom: 1px solid #e0e2da;
       }
 
       .work-featured {
@@ -56,7 +47,7 @@ export function WorkPageStyles() {
         grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.4fr);
         align-items: center;
         gap: clamp(40px, 5vw, 80px);
-        padding: 40px 0;
+        padding: 0 0 40px;
       }
 
       .work-item-number {
@@ -68,11 +59,10 @@ export function WorkPageStyles() {
 
       .work-featured h2 {
         margin: 0 0 18px;
-        font-family: Georgia, "Times New Roman", serif;
-        font-size: 52px;
+        font-family: var(--font-handwriting-en);
+        font-size: 60px;
         line-height: 1;
         font-weight: 400;
-        letter-spacing: -0.04em;
       }
 
       .work-featured-description {
@@ -100,21 +90,18 @@ export function WorkPageStyles() {
         min-height: 44px;
         margin-top: 28px;
         padding: 0 15px 0 18px;
-        border: 1px solid rgba(23, 19, 16, 0.2);
-        border-radius: 8px;
+        border: 0;
+        background: var(--surface-secondary);
+        border-radius: 28px;
         font-size: 13px;
         font-weight: 500;
-        transition: transform 100ms ease-out;
+        transition: background 180ms, color 180ms;
         -webkit-tap-highlight-color: transparent;
       }
 
       .work-visit:hover {
         background: var(--text-primary);
         color: var(--surface-default);
-      }
-
-      .work-visit:active {
-        transform: scale(0.97);
       }
 
       .work-page-content a:focus-visible,
@@ -133,9 +120,7 @@ export function WorkPageStyles() {
         aspect-ratio: 16 / 9;
         overflow: hidden;
         border-radius: 16px;
-        background: #080808;
-        outline: 1px solid rgba(23, 19, 16, 0.08);
-        outline-offset: -1px;
+        background: transparent;
       }
 
       .work-media-stage video {
@@ -143,7 +128,8 @@ export function WorkPageStyles() {
         inset: 0;
         width: 100%;
         height: 100%;
-        background: #080808;
+        border-radius: inherit;
+        background: transparent;
         object-fit: contain;
       }
 
@@ -183,7 +169,7 @@ export function WorkPageStyles() {
 
       .work-item-title {
         margin: 0 0 10px;
-        font-family: Georgia, "Times New Roman", serif;
+        font-family: var(--site-font);
         font-size: 32px;
         font-weight: 400;
         line-height: 1.1;
@@ -220,8 +206,8 @@ export function WorkPageStyles() {
         }
 
         .work-page-content {
-          width: calc(100% - 64px);
-          padding: 128px 0 88px;
+          width: calc(100% - var(--site-gutter) * 2);
+          padding: 60px 0 88px;
         }
 
         .work-featured {
@@ -239,14 +225,15 @@ export function WorkPageStyles() {
 
       @media (max-width: 720px) {
         .work-page-content {
-          width: calc(100% - 40px);
-          padding: 104px 0 64px;
+          width: calc(100% - var(--site-gutter) * 2);
+          padding: 48px 0 64px;
         }
 
-        .work-page-heading { margin-bottom: 24px; }
-        .work-page-heading h1 { font-size: 32px; }
-        .work-featured { grid-template-columns: 1fr; gap: 28px; padding: 28px 0 24px; }
-        .work-featured h2 { font-size: 44px; margin-bottom: 16px; }
+        .work-featured { grid-template-columns: 1fr; gap: 28px; padding-bottom: 24px; }
+        .work-featured h2 { font-size: 50px; margin-bottom: 16px; }
+        .work-row { grid-template-columns: 20px minmax(0, 1fr) 16px; gap: 14px; min-height: 120px; padding: 24px 0; }
+        .work-item-title { font-size: 28px; }
+        .work-row-visit { margin-left: 0; gap: 0; font-size: 0; }
       }
 
       @media (prefers-reduced-motion: reduce) {

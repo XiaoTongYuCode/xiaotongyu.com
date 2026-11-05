@@ -55,9 +55,7 @@ export default function WorkPageClient() {
         <SiteNav copy={copy} languageSwitcher={languageSwitcher} />
 
         <section className="work-page-content" aria-labelledby="work-page-heading">
-          <header className="work-page-heading">
-            <h1 id="work-page-heading">{copy.work.heading}</h1>
-          </header>
+          <h1 className="work-page-heading" id="work-page-heading">{copy.work.heading}</h1>
 
           <ol className="work-page-list">
             {copy.work.items.map((item, index) => (

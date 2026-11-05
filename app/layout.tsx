@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import StyledJsxRegistry from "./styled-jsx-registry";
+import { HOME_COPY } from "./_components/home/copy";
 import {
   PERSON_ID,
   PERSON_NAME_EN,
@@ -11,9 +12,7 @@ import {
   serializeJsonLd,
 } from "./_seo/site";
 
-const title = "肖彤宇（Xiaotong Yu）";
-const description =
-  "肖彤宇（Xiaotong Yu）的个人网站，分享产品工程、AI 应用、创意编程、网页体验与独立作品。";
+const { title, description } = HOME_COPY["en-US"].meta;
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -58,8 +57,8 @@ export const metadata: Metadata = {
     siteName: `${PERSON_NAME_ZH} · ${PERSON_NAME_EN}`,
     type: "website",
     url: "/",
-    locale: "zh_CN",
-    alternateLocale: ["en_US"],
+    locale: "en_US",
+    alternateLocale: ["zh_CN"],
     images: [
       {
         url: "/xtyopen-logo-preview-white.png",
