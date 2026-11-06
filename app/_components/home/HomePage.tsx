@@ -6,6 +6,7 @@ import CrowdScene from "./CrowdScene";
 import DeskPerson from "./DeskPerson";
 import { HOME_COPY } from "./copy";
 import styles from "./home.module.css";
+import { localizedPath } from "../../_i18n/routing";
 
 export default function HomePage() {
   const { copy, languageSwitcher, locale } = useSiteCopy();
@@ -26,7 +27,7 @@ export default function HomePage() {
           <div className={styles.heroAside}>
             <p>{content.hero.intro}</p>
             <div className={styles.actions}>
-              <a className={styles.primaryButton} href="/work">{content.hero.work}</a>
+              <a className={styles.primaryButton} href={localizedPath("/work", locale)}>{content.hero.work}</a>
               <div className={styles.contactActions}>
                 <ContactButton
                   key={locale}

@@ -25,6 +25,7 @@ export type CrowdPerson = {
   phase: number;
   variant: number;
   height: number;
+  stride: number;
   profileIndex: number;
 };
 
@@ -58,7 +59,8 @@ function depthAt(z: number) {
   return (1 / z - 1 / CAMERA.far) / (1 / CAMERA.near - 1 / CAMERA.far);
 }
 
-export function createCrowd(profileCount: number, count = BASE_CROWD_COUNT): CrowdPerson[] {
+export function createCrowd(profileCount: number, count = BASE_CROWD_COUNT,
+  cast?: readonly { height: number; stride: number }[]): CrowdPerson[] {
   let seed = 231105;
   const random = () => {
     seed = (Math.imul(seed, 1664525) + 1013904223) | 0;
@@ -93,8 +95,9 @@ export function createCrowd(profileCount: number, count = BASE_CROWD_COUNT): Cro
       heading: leader?.heading ?? (random() - .5) * .26,
       group: grouped ? groupIndex : -1,
       phase: random() * TAU,
-      variant: Math.floor(random() * WALKING_STYLES.length),
+      variant: Math.floor(random() * (cast?.length ?? WALKING_STYLES.length)),
       height: 1.65 + random() * .20,
+      stride: 0,
       profileIndex: (id + groupIndex * 3) % profileCount,
     });
   }
@@ -109,7 +112,17 @@ export function createCrowd(profileCount: number, count = BASE_CROWD_COUNT): Cro
     if (nearest.id !== id) people[nearest.id] = { ...previous, id: nearest.id };
     assigned.add(id);
   }
+  for (const person of people) {
+    if (cast) {
+      person.height *= cast[person.variant].height / 1.75;
+      person.stride = cast[person.variant].stride;
+    } else person.stride = WALKING_STYLES[person.variant].stride;
+  }
   return people;
+}
+
+export function crowdFocalForWidth(width: number) {
+  return width < 700 ? 265 : clamp(width * CAMERA.focal, 245, 510);
 }
 
 /** Ground-plane pedestrian steering, with a fixed clock and real pose history. */
@@ -120,6 +133,8 @@ export class CrowdMotion {
   private ax: Float64Array;
   private az: Float64Array;
   private activeCount: number;
+  private gaitProjectionRatio = 1;
+  private matchSideView = false;
 
   constructor(private people: CrowdPerson[]) {
     this.activeCount = people.length;
@@ -135,6 +150,18 @@ export class CrowdMotion {
 
   setActiveCount(count: number) {
     this.activeCount = Math.min(this.people.length, Math.max(0, Math.round(count)));
+  }
+
+  /** Mobile enlarges bodies independently of the camera; match screen travel. */
+  setGaitProjection(width: number) {
+    this.matchSideView = true;
+    this.gaitProjectionRatio = width * CAMERA.focal / crowdFocalForWidth(width);
+  }
+
+  private gaitSpeed(pose: WorldPose) {
+    return this.matchSideView
+      ? Math.abs(pose.vx - pose.x * pose.vz / pose.z) * this.gaitProjectionRatio
+      : Math.hypot(pose.vx, pose.vz);
   }
 
   private record() {
@@ -215,7 +242,7 @@ export class CrowdMotion {
       state.vx *= speedLimit; state.vz *= speedLimit;
       state.x += state.vx * dt;
       state.z = clamp(state.z + state.vz * dt, CAMERA.near, CAMERA.far);
-      state.gait += Math.hypot(state.vx, state.vz) * dt / (person.height * WALKING_STYLES[person.variant].stride) * TAU;
+      state.gait += this.gaitSpeed(state) * dt / (person.height * person.stride) * TAU;
       // Recycle only beyond both faded margins, where the jump is invisible.
       const span = 1.36 * state.z / CAMERA.focal;
       if (.5 + CAMERA.focal * state.x / state.z > 1.18) state.x -= span;
@@ -231,7 +258,7 @@ export class CrowdMotion {
       const ahead = Math.max(0, time - this.tick * STEP) * TIME_SCALE;
       const z = clamp(pose.z + pose.vz * ahead, CAMERA.near, CAMERA.far);
       return { ...pose, x: pose.x + pose.vx * ahead, z,
-        gait: pose.gait + Math.hypot(pose.vx, pose.vz) * ahead / (this.people[id].height * WALKING_STYLES[this.people[id].variant].stride) * TAU };
+        gait: pose.gait + this.gaitSpeed(pose) * ahead / (this.people[id].height * this.people[id].stride) * TAU };
     }
     const frame = Math.max(Math.max(0, this.tick - HISTORY + 1), time / STEP);
     const first = Math.floor(frame), second = Math.min(first + 1, this.tick), mix = frame - first;
@@ -246,7 +273,7 @@ export function projectPerson(person: CrowdPerson, pose: WorldPose, width: numbe
   const mobile = width < 700;
   const x = .5 + CAMERA.focal * pose.x / pose.z;
   const depth = depthAt(pose.z);
-  const focal = mobile ? 265 : clamp(width * CAMERA.focal, 245, 510);
+  const focal = crowdFocalForWidth(width);
   const edge = Math.min(1, Math.max(0, x / .12), Math.max(0, (1 - x) / .12));
   return {
     ...person, depth, normalizedX: x, screenX: x * width,

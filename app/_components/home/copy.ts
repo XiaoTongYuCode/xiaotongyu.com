@@ -39,8 +39,8 @@ export const HOME_COPY: Record<Locale, HomePageCopy> = {
   },
   "en-US": {
     meta: {
-      title: `${DISPLAY_NAME} — Products & code`,
-      description: "TongYu Xiao's personal workbench: code, products, and experiments around AI, human connection, and everyday life.",
+      title: `${DISPLAY_NAME} (肖彤宇) — Products & code`,
+      description: "TongYu Xiao's (肖彤宇) personal workbench: code, products, and experiments around AI, human connection, and everyday life.",
     },
     hero: {
       title: ["Some ideas are worth", "seeing through."],

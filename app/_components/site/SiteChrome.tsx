@@ -1,16 +1,15 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useEffect, useState, type MouseEvent, type ReactNode } from "react";
+import { type MouseEvent, type ReactNode } from "react";
 import {
-  DEFAULT_LOCALE,
   I18N_MESSAGES,
-  isLocale,
-  LOCALE_STORAGE_KEY,
   type HomeCopy,
   type Locale,
 } from "../../_i18n";
-import { DISPLAY_NAME } from "./identity";
+import { rememberLocale, useLocale } from "../../_i18n/LocaleProvider";
+import { languageSwitchPath, localizedPath, unlocalizedPath } from "../../_i18n/routing";
+import { DISPLAY_NAME, GITHUB_URL, X_URL } from "./identity";
 import styles from "./site-chrome.module.css";
 import { SiteChromeStyles } from "./SiteChromeStyles";
 
@@ -86,40 +85,26 @@ type SiteCopyState = {
 };
 
 export function useSiteCopy(): SiteCopyState {
-  const [locale, setLocale] = useState<Locale>(DEFAULT_LOCALE);
-  const [hasLoadedLocale, setHasLoadedLocale] = useState(false);
+  const locale = useLocale();
+  const pathname = usePathname();
   const copy = I18N_MESSAGES[locale].home;
-  const toggleLocale = () => setLocale((value) => (value === "zh-CN" ? "en-US" : "zh-CN"));
-
-  useEffect(() => {
-    try {
-      const savedLocale = window.localStorage.getItem(LOCALE_STORAGE_KEY);
-      if (isLocale(savedLocale)) {
-        setLocale(savedLocale);
-      }
-    } catch {
-      // Use the default locale when browser storage is blocked.
-    }
-    setHasLoadedLocale(true);
-  }, []);
-
-  useEffect(() => {
-    document.documentElement.lang = copy.htmlLang;
-  }, [copy.htmlLang]);
-
-  useEffect(() => {
-    if (!hasLoadedLocale) return;
-    try {
-      window.localStorage.setItem(LOCALE_STORAGE_KEY, locale);
-    } catch {
-      // Ignore storage failures so rendering is not blocked in privacy-restricted contexts.
-    }
-  }, [hasLoadedLocale, locale]);
+  const nextLocale = locale === "zh-CN" ? "en-US" : "zh-CN";
 
   const languageSwitcher = (
-    <button type="button" className="language-trigger" aria-label={copy.language.aria} onClick={toggleLocale}>
+    <a
+      className="language-trigger"
+      href={languageSwitchPath(pathname, nextLocale)}
+      hrefLang={nextLocale}
+      aria-label={copy.language.aria}
+      onClick={(event) => {
+        // Modified clicks should open the alternate without changing this tab's preference.
+        if (event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) {
+          rememberLocale(nextLocale);
+        }
+      }}
+    >
       <img src="/icon/translation.svg" width={16} height={16} alt="" aria-hidden="true" />
-    </button>
+    </a>
   );
 
   return { copy, languageSwitcher, locale };
@@ -133,6 +118,7 @@ type SiteNavProps = {
 export function SiteNav({ copy, languageSwitcher }: SiteNavProps) {
   const pathname = usePathname();
   const isChinese = copy.htmlLang === "zh-CN";
+  const sitePath = (path: string) => localizedPath(path, isChinese ? "zh-CN" : "en-US");
   const navLinks = [
     { href: "/work", label: copy.nav.work },
     { href: "/about", label: copy.nav.about },
@@ -143,13 +129,13 @@ export function SiteNav({ copy, languageSwitcher }: SiteNavProps) {
   return (
     <>
       <header className={styles.header}>
-        <a className={styles.brand} href="/" aria-label={`${DISPLAY_NAME} — ${isChinese ? "首页" : "home"}`}>
+        <a className={styles.brand} href={sitePath("/")} aria-label={`${DISPLAY_NAME} — ${isChinese ? "首页" : "home"}`}>
           <img src="/xtyopen-icon.svg" width="22" height="22" alt="" />
           <span>{DISPLAY_NAME}</span>
         </a>
         <nav className={styles.nav} aria-label={copy.nav.ariaMain}>
           {navLinks.map((link) => (
-            <a href={link.href} key={link.href} aria-current={pathname === link.href ? "page" : undefined}>
+            <a href={sitePath(link.href)} key={link.href} aria-current={unlocalizedPath(pathname) === link.href ? "page" : undefined}>
               {link.label}
             </a>
           ))}
@@ -172,12 +158,14 @@ type SiteFooterProps = {
 };
 
 export function SiteFooter({ copy }: SiteFooterProps) {
+  const sitePath = (path: string) => localizedPath(path, copy.htmlLang === "zh-CN" ? "zh-CN" : "en-US");
   return (
     <footer className={styles.footer}>
       <span>© {new Date().getFullYear()} {DISPLAY_NAME}</span>
-      <a href="/work">{copy.nav.work}</a>
-      <a href="/about">{copy.nav.about}</a>
-      <a href="https://github.com/XiaoTongYuCode" target="_blank" rel="noreferrer">GitHub</a>
+      <a href={sitePath("/work")}>{copy.nav.work}</a>
+      <a href={sitePath("/about")}>{copy.nav.about}</a>
+      <a href={GITHUB_URL} target="_blank" rel="noreferrer">GitHub</a>
+      <a href={X_URL} target="_blank" rel="noreferrer" aria-label="TongYu Xiao on X (@tongyu_xiao)">X</a>
       <a href={CONTACT_MAILTO} onClick={(event) => handleContactEmailClick(event, copy.contact.emailCopied, copy.contact.emailCopyFailed)}>
         {CONTACT_EMAIL}
       </a>

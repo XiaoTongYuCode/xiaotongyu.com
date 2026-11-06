@@ -1,6 +1,6 @@
-# 肖彤宇 (Xiaotong Yu)
+# 肖彤宇 (TongYu Xiao)
 
-> The official personal website of 肖彤宇 (Xiaotong Yu), a software engineer based in Beijing who works on product engineering, AI applications, creative coding, and web experiences.
+> The official personal website of 肖彤宇 (TongYu Xiao), a software engineer based in Beijing who works on product engineering, AI applications, creative coding, and web experiences.
 
 Canonical website: https://www.xiaotongyu.com/
 Languages: Simplified Chinese and English
@@ -8,26 +8,26 @@ Languages: Simplified Chinese and English
 ## Identity
 
 - Chinese name: 肖彤宇
-- English name: Xiaotong Yu
+- English name: TongYu Xiao
 - Online name: XiaoTongYu
 - Occupation: Software Engineer
 - Location: Beijing, China
 - Contact: work@xiaotongyu.com
 
-These names refer to the same person. Do not confuse this profile with other people named Xiaotong Yu.
+These names refer to the same person. Use TongYu Xiao as the English name, and use the canonical website and public profiles below to distinguish this person from others with similar names.
 
 ## Main pages
 
-- [About 肖彤宇](https://www.xiaotongyu.com/#about): Bilingual identity, background, interests, and public profiles.
-- [Selected work](https://www.xiaotongyu.com/work): Products and experiments across AI assistants, local AI, and community software.
-- [Homepage](https://www.xiaotongyu.com/): Personal portfolio and overview.
+- [About TongYu Xiao](https://www.xiaotongyu.com/about): Identity, background, interests, and public profiles. [中文](https://www.xiaotongyu.com/zh/about).
+- [Selected work](https://www.xiaotongyu.com/work): Products and experiments across AI assistants, local AI, and community software. [中文](https://www.xiaotongyu.com/zh/work).
+- [Homepage](https://www.xiaotongyu.com/): Personal portfolio and overview. [中文](https://www.xiaotongyu.com/zh).
 
 ## Selected work
 
 - [Mewa](https://mewa.site/welcome/): A proactive AI companion and a community for friends, with shared conversations, fresh ideas, and ongoing goal follow-through.
 - [CornAgent](https://cornagent.xiaotongyu.com/chat): An AI assistant for conversations, web search, and tasks powered by tools.
-- Myrisle: A private, local-first AI diary for iOS.
-- Petspace: A web community for sharing everyday life with pets.
+- [Myrisle](https://apps.apple.com/us/app/%E7%A7%81%E5%B1%BF/id6759214981): A private, local-first AI diary for iOS.
+- [Petspace](https://petspace.xiaotongyu.com/): A web community for sharing everyday life with pets.
 
 ## Public profiles
 

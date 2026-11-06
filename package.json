@@ -9,7 +9,10 @@
     "lint": "next lint",
     "depth:build": "node scripts/build-depth-frames.mjs",
     "depth:codecs": "node scripts/build-depth-codecs.mjs",
-    "test:depth": "node --test tests/depth-frame-sequence.test.mjs tests/depth-codecs.test.mjs"
+    "test:depth": "node --test tests/depth-frame-sequence.test.mjs tests/depth-codecs.test.mjs",
+    "test:localization": "node --test tests/localization.test.mjs",
+    "test:site": "node scripts/verify-site.mjs",
+    "test:walkers": "node --test tests/walker-atlas.test.mjs"
   },
   "dependencies": {
     "@vercel/analytics": "^2.0.1",

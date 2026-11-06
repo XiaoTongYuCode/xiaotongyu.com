@@ -8,6 +8,8 @@ import { DISPLAY_NAME } from "../site/identity";
 import { HOME_COPY } from "./copy";
 import { POINTER_SLOT } from "./PointerTracking";
 import styles from "./home.module.css";
+import { localizedPath } from "../../_i18n/routing";
+import { loadWalkerAtlas } from "./walkerAtlas";
 
 const LABEL_BANKS = Array.from({ length: TRACK_COLORS.length * 2 }, (_, index) => index);
 
@@ -26,34 +28,43 @@ export default function CrowdScene({ locale, projects }: { locale: Locale; proje
         url: project.url,
         visitLabel: isChinese ? "访问" : "Visit",
       })),
-      { name: DISPLAY_NAME, caption: content.personalCaption, url: "/about", visitLabel: isChinese ? "关于" : "About" },
+      { name: DISPLAY_NAME, caption: content.personalCaption, url: localizedPath("/about", locale), visitLabel: isChinese ? "关于" : "About" },
     ];
-  }, [projects, isChinese, content]);
+  }, [projects, isChinese, content, locale]);
   const profilesRef = useRef(profiles);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
-    let renderer: CrowdRenderer;
-    try {
-      renderer = new CrowdRenderer(canvas, labelsRef.current, profilesRef.current);
-      rendererRef.current = renderer;
-      renderer.setPaused(preference.matches);
-    } catch {
-      setAvailable(false);
-      return;
-    }
+    let renderer: CrowdRenderer | null = null;
+    let cancelled = false;
+    // Local comparison URL: ?crowd=original. Image failures retain the rig.
+    const mode = new URLSearchParams(window.location.search).get("crowd");
+    const original = mode === "original";
+    const initialize = async () => {
+      const source = original ? null : await loadWalkerAtlas(mode === "three" ? 3 : 6).catch(() => null);
+      if (cancelled) return;
+      try {
+        renderer = new CrowdRenderer(canvas, labelsRef.current, profilesRef.current, source);
+        rendererRef.current = renderer;
+        renderer.setPaused(preference.matches);
+      } catch {
+        setAvailable(false);
+      }
+    };
+    void initialize();
     const updatePreference = () => {
-      renderer.setPaused(preference.matches);
+      renderer?.setPaused(preference.matches);
     };
     preference.addEventListener("change", updatePreference);
-    const clearPointer = () => renderer.clearPointer();
+    const clearPointer = () => renderer?.clearPointer();
     window.addEventListener("blur", clearPointer);
     return () => {
       preference.removeEventListener("change", updatePreference);
       window.removeEventListener("blur", clearPointer);
-      renderer.dispose();
+      cancelled = true;
+      renderer?.dispose();
       rendererRef.current = null;
     };
   }, []);

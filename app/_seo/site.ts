@@ -1,4 +1,4 @@
-import { DISPLAY_NAME } from "../_components/site/identity";
+import { DISPLAY_NAME, GITHUB_URL, X_URL } from "../_components/site/identity";
 
 export const SITE_URL = "https://www.xiaotongyu.com";
 export const PERSON_URL = `${SITE_URL}/`;
@@ -9,8 +9,8 @@ export const PERSON_NAME_EN = DISPLAY_NAME;
 export const PERSON_HANDLE = "XiaoTongYu";
 
 export const PERSON_SAME_AS = [
-  "https://github.com/XiaoTongYuCode",
-  "https://x.com/tongyu_xiao",
+  GITHUB_URL,
+  X_URL,
 ] as const;
 
 export const PERSON_DESCRIPTION =

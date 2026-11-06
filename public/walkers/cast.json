@@ -1,0 +1,62 @@
+[
+  {
+    "id": "everyday",
+    "label": "轻装",
+    "height": 1.8,
+    "src": "/walkers/everyday.webp",
+    "stride": 0.8113223270133688,
+    "calibration": "/walkers/calibration.json",
+    "provenance": "captured-4855",
+    "description": "保留第一位真人的身形、衣摆和步态。"
+  },
+  {
+    "id": "coat",
+    "label": "宽外套",
+    "height": 1.61,
+    "src": "/walkers/coat.webp",
+    "stride": 0.8113223270133688,
+    "calibration": "/walkers/calibration.json",
+    "provenance": "authored-from-4855",
+    "description": "同一位真人步态，程序补充较宽外套。"
+  },
+  {
+    "id": "backpack",
+    "label": "双肩包",
+    "height": 1.73,
+    "src": "/walkers/backpack.webp",
+    "stride": 0.8113223270133688,
+    "calibration": "/walkers/calibration.json",
+    "provenance": "authored-from-4855",
+    "description": "同一位真人步态，程序补充双肩包。"
+  },
+  {
+    "id": "commuter",
+    "label": "短发便装",
+    "height": 1.86,
+    "src": "/walkers/commuter.webp",
+    "stride": 0.694477964784704,
+    "calibration": "/walkers/commuter-calibration.json",
+    "provenance": "captured-4888",
+    "description": "第二位真人：短发、短袖与轻便身形。"
+  },
+  {
+    "id": "business",
+    "label": "公文包",
+    "height": 1.66,
+    "src": "/walkers/business.webp",
+    "stride": 0.8754581814873399,
+    "calibration": "/walkers/business-calibration.json",
+    "provenance": "captured-5995594",
+    "description": "第三位真人：短发、衬衫与实际手提公文包。"
+  },
+  {
+    "id": "courier",
+    "label": "配送箱",
+    "height": 1.72,
+    "src": "/walkers/courier.webp",
+    "stride": 0.7895085411584782,
+    "calibration": "/walkers/courier-calibration.json",
+    "provenance": "captured-7706276",
+    "description": "第四位真人：帽子、长发与实际配送箱。"
+  }
+]

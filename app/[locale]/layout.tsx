@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
-import "./globals.css";
-import StyledJsxRegistry from "./styled-jsx-registry";
-import { HOME_COPY } from "./_components/home/copy";
+import "../globals.css";
+import StyledJsxRegistry from "../styled-jsx-registry";
+import { HOME_COPY } from "../_components/home/copy";
+import { LocaleProvider } from "../_i18n/LocaleProvider";
+import { LEGACY_LOCALE_SCRIPT } from "../_i18n/routing";
+import { pageLocale, type LocalizedPageProps } from "../_seo/pages";
 import {
   PERSON_ID,
   PERSON_NAME_EN,
@@ -10,7 +13,7 @@ import {
   SITE_URL,
   personJsonLd,
   serializeJsonLd,
-} from "./_seo/site";
+} from "../_seo/site";
 
 const { title, description } = HOME_COPY["en-US"].meta;
 
@@ -93,19 +96,32 @@ const websiteJsonLd = {
   ],
 };
 
-export default function RootLayout({
+export const dynamicParams = false;
+
+export function generateStaticParams() {
+  return [{ locale: "en" }, { locale: "zh" }];
+}
+
+export default async function RootLayout({
   children,
-}: Readonly<{
+  params,
+}: Readonly<LocalizedPageProps & {
   children: React.ReactNode;
 }>) {
+  const locale = await pageLocale({ params });
   return (
-    <html lang="en">
+    <html lang={locale === "zh-CN" ? "zh-CN" : "en"}>
+      <head>
+        <script id="legacy-locale" dangerouslySetInnerHTML={{ __html: LEGACY_LOCALE_SCRIPT }} />
+      </head>
       <body>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: serializeJsonLd(websiteJsonLd) }}
         />
-        <StyledJsxRegistry>{children}</StyledJsxRegistry>
+        <LocaleProvider locale={locale}>
+          <StyledJsxRegistry>{children}</StyledJsxRegistry>
+        </LocaleProvider>
         <Analytics />
       </body>
     </html>

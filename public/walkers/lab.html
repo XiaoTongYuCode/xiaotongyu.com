@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>行走轮廓 · 本地原型</title>
+<style>
+  :root{color-scheme:light;font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#292c28;background:#f7f7f4;-webkit-font-smoothing:antialiased}
+  *{box-sizing:border-box} body{margin:0} main{max-width:1160px;margin:0 auto;padding:64px 28px 36px}
+  a{color:inherit;text-underline-offset:4px}header{display:flex;justify-content:space-between;gap:32px;align-items:baseline}h1{font-size:32px;letter-spacing:-.04em;line-height:1.3;font-weight:500;margin:16px 0}p{color:#747970;margin:10px 0;max-width:660px}nav{display:flex;gap:24px;white-space:nowrap;font-size:13px}
+  .controls{display:flex;flex-wrap:wrap;gap:20px;align-items:center;margin:36px 0 24px;border-top:1px solid #dfe1d9;padding-top:22px}
+  button{min-height:42px;min-width:76px;border:0;border-radius:30px;padding:8px 22px;background:#292c28;color:#fff;font:inherit;cursor:pointer;transition:scale 150ms ease-out}button:active{scale:.96}button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid #1b7657;outline-offset:5px}
+  label{display:flex;align-items:center;gap:10px;font-size:13px}input{accent-color:#477b5d;min-height:40px;cursor:pointer}output{font-variant-numeric:tabular-nums;min-width:38px}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.card{background:#eeeFE9;border-radius:8px;overflow:hidden}canvas{display:block;width:100%;height:320px}.card div{padding:12px 22px 24px}.card h2{font-size:16px;font-weight:500;margin:0}.card p{font-size:12px;line-height:1.7;margin:6px 0 0}.scrub{width:100%;margin-top:24px}.scrub input{flex:1}footer{font-size:12px;border-top:1px solid #dfe1d9;margin-top:36px;padding-top:20px;color:#747970}footer p{max-width:860px}.status{color:#a23f2b}
+  @media(max-width:700px){main{padding:28px 20px}header{display:block}nav{margin-top:22px;gap:20px}.cards{grid-template-columns:1fr}canvas{height:270px}.controls{gap:14px}h1{font-size:28px}}
+</style>
+<main>
+  <header><div><h1>让人群，更像路过的人。</h1><p>四位真人的侧身步态，六种轮廓。独立的身形、衣物和负重，让人群有更多差异。</p></div><nav><a href="/zh">放进首页看</a><a href="/zh?crowd=three">三种原型</a><a href="/zh?crowd=original">最初原版</a></nav></header>
+  <div class="controls"><button id="play" type="button">暂停</button><label>速度 <input id="speed" type="range" min="0.5" max="1.5" step="0.1" value="1"><output id="speed-value">1.0×</output></label><label><input id="travel" type="checkbox"> 向前走</label><label><input id="grid" type="checkbox" checked> 地面刻度</label></div>
+  <div class="cards"></div>
+  <label class="scrub">逐帧观察 <input id="frame" type="range" min="0" max="47" step="1" value="0"><output id="frame-value">01 / 48</output></label>
+  <p id="status" class="status" role="status"></p>
+  <footer><p>四位真人，六种形态。轻装、宽外套和双肩包共享同一段捕获步态；外套和双肩包是程序添加。便装、公文包、配送箱分别来自另外三位真人，包袋与负重姿态均保留素材本身。显示高矮为设计比例，不代表真人身高。</p><p>素材：Mixkit #4855、#4888（Stock Video Free License）；Pexels #5995594、#7706276（Pexels License）。<a href="./source.json">完整来源与限制</a>。仅本地实验。</p></footer>
+</main>
+<script type="module">
+const reduced=matchMedia('(prefers-reduced-motion: reduce)');
+const play=document.querySelector('#play'),speed=document.querySelector('#speed'),travel=document.querySelector('#travel'),grid=document.querySelector('#grid'),scrub=document.querySelector('#frame');
+let paused=reduced.matches,previous=0,cards=[];
+const syncButton=()=>{play.textContent=paused?'播放':'暂停';play.setAttribute('aria-pressed',String(!paused))};syncButton();
+play.onclick=()=>{paused=!paused;previous=0;syncButton()};
+reduced.addEventListener('change',()=>{paused=reduced.matches;syncButton()});
+speed.oninput=()=>document.querySelector('#speed-value').textContent=Number(speed.value).toFixed(1)+'×';
+scrub.oninput=()=>{paused=true;syncButton();cards.forEach(c=>c.cycles=Number(scrub.value)/48);draw()};
+travel.onchange=grid.onchange=()=>draw();
+function resize(){for(const {canvas} of cards){const r=canvas.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2);canvas.width=Math.round(r.width*d);canvas.height=Math.round(r.height*d)}draw()}
+function draw(){
+ const primary=Math.floor((cards[0]?.cycles||0)*48)%48;scrub.value=primary;document.querySelector('#frame-value').textContent=String(primary+1).padStart(2,'0')+' / 48';
+ for(const {canvas,ctx,image,height,stride,cycles} of cards){
+  const rect=canvas.getBoundingClientRect(),ratio=canvas.width/rect.width,w=rect.width,h=rect.height,bh=Math.min(205,h*.66)*height/1.8,ground=h-36,s=bh/99,frame=Math.floor(cycles*48)%48;
+  ctx.setTransform(ratio,0,0,ratio,0,0);ctx.clearRect(0,0,w,h);ctx.fillStyle='#eeefe9';ctx.fillRect(0,0,w,h);
+  if(grid.checked){ctx.strokeStyle='#ccd0c6';ctx.lineWidth=.7;ctx.beginPath();ctx.moveTo(0,ground+1);ctx.lineTo(w,ground+1);const offset=travel.checked?0:-cycles*bh*stride%28;for(let x=offset;x<w;x+=28){ctx.moveTo(x,ground+1);ctx.lineTo(x,ground+6)}ctx.stroke()}
+  const x=travel.checked?((cycles*bh*stride+w*.5+80)%(w+160))-80:w*.5;
+  if(image.complete&&image.naturalWidth)ctx.drawImage(image,frame%8*88,Math.floor(frame/8)*140,88,140,x-44*s,ground-117*s,88*s,140*s);
+ }
+}
+try{
+ const cast=await fetch('./cast.json').then(r=>r.json());
+ cards=await Promise.all(cast.map(async style=>{
+  const article=document.createElement('article');article.className='card';
+  const canvas=document.createElement('canvas');canvas.dataset.kind=style.id;canvas.setAttribute('role','img');canvas.setAttribute('aria-label',style.label+'连续步态');
+  const content=document.createElement('div'),heading=document.createElement('h2'),description=document.createElement('p');heading.textContent=style.label;description.textContent=style.description;content.append(heading,description);article.append(canvas,content);document.querySelector('.cards').append(article);
+  const image=new Image();image.src=style.src;const calibration=await fetch(style.calibration).then(r=>r.json());await image.decode();
+  return {...style,canvas,ctx:canvas.getContext('2d'),image,cycles:0,duration:calibration.cyclePeriodSourceFrames/calibration.sourceFps};
+ }));resize();
+}catch{document.querySelector('#status').textContent='轮廓图集加载失败，请刷新重试。'}
+new ResizeObserver(resize).observe(document.querySelector('.cards'));
+function tick(now){if(!paused&&!document.hidden){const dt=previous?Math.min((now-previous)/1000,.08):0;cards.forEach(c=>c.cycles+=dt*Number(speed.value)/c.duration);draw()}previous=now;requestAnimationFrame(tick)}requestAnimationFrame(tick);
+</script>
+</html>

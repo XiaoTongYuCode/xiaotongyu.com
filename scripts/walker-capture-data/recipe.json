@@ -1,0 +1,20 @@
+{
+  "purpose": "Rebuild the three additional licensed captures; raw videos stay outside the repository.",
+  "requirements": "ffmpeg, macOS Vision, Python numpy/opencv-python-headless/Pillow",
+  "captures": [
+    {"id":"commuter","raw":"mixkit-4888.mp4","start":1.5,"seconds":4,"fps":24,"filter":"hflip","periodRange":[34,35],"seamBlend":0},
+    {"id":"business","raw":"pexels-5995594.mp4","start":0,"seconds":1.65,"fps":23.976,"filter":"scale=-2:1280","periodRange":[24,28],"seamBlend":4},
+    {"id":"courier","raw":"pexels-7706276.mp4","start":2,"seconds":4,"fps":25,"filter":"scale=-2:1280,hflip","periodRange":[59,63],"seamBlend":4}
+  ],
+  "steps": [
+    "Download only the exact source.json entries after reviewing their licenses. Verify SHA256.",
+    "Extract numbered %04d.png files to {root}/{id}-frames with ffmpeg -ss START -i RAW -t SECONDS -vf FILTER; retain native fps.",
+    "python scripts/prepare-focused-crops.py --root ROOT --id ID",
+    "swift scripts/segment-walker-instances.swift ROOT/ID-pose-crops ROOT/ID-cropped-masks",
+    "python scripts/restore-focused-masks.py --root ROOT --id ID",
+    "python scripts/build-captured-walker.py --id ID --source SOURCE --frames ROOT/ID-frames --masks ROOT/ID-focused-masks --poses ROOT/ID-refined-poses.json --out public/walkers --qa-dir ROOT --fps FPS --segment-start START --minimum-period MIN --maximum-period MAX --unconstrained-mask --optical-support --seam-blend N",
+    "Review every alpha frame, update cast.json stride from the generated calibration, then node --test tests/walker-atlas.test.mjs and npm run build.",
+    "Run isolated production preview; python scripts/verify-walker-browser.py --out artifacts/crowd-six; python scripts/render-six-comparison.py creates the phone video."
+  ],
+  "limits": "Crop windows and pose data belong to these exact source resolutions only. A new source requires manual review. Four-frame alpha loop closure is an authored correction, not additional captured footage. Numerical synchronization does not guarantee zero visible toe/heel slide."
+}

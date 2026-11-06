@@ -5,7 +5,7 @@ import type { Locale, LocaleMessages } from "./types";
 export type { HomeCopy, Locale, LocaleMessages, WorkItemCopy } from "./types";
 
 export const DEFAULT_LOCALE: Locale = "en-US";
-export const LOCALE_STORAGE_KEY = "xiaotongyu.locale";
+export { LOCALE_STORAGE_KEY } from "./routing";
 
 export const I18N_MESSAGES: Record<Locale, LocaleMessages> = {
   "en-US": enUS,

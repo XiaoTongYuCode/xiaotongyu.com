@@ -3,6 +3,9 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   allowedDevOrigins: ["192.168.1.183"],
   devIndicators: false,
+  async redirects() {
+    return [{ source: "/version/2", destination: "/", permanent: true }];
+  },
   async headers() {
     return [
       {

@@ -1,0 +1,78 @@
+{
+  "checkedOn": "2026-11-06",
+  "captureCount": 4,
+  "formCount": 6,
+  "use": "Edited alpha silhouettes embedded in the portfolio crowd scene. Raw video, face pixels, clothing logos and audio are not shipped.",
+  "identityReview": "The output retains body and hair outlines. No face detail remains. A separate model-release receipt was not provided by the item page.",
+  "limits": "Four performers. Coat and backpack are authored variants of the first capture. Display heights are design choices. Silhouette segmentation, heel/toe roll and ground-flow calibration remain approximate.",
+  "sources": [
+    {
+      "checkedOn": "2026-11-05",
+      "item": "Mixkit #4855",
+      "creator": "stockyana",
+      "title": "Young man walking listening to music from his headphones",
+      "page": "https://mixkit.co/free-stock-video/young-man-walking-listening-to-music-from-his-headphones-4855/",
+      "download": "https://assets.mixkit.co/videos/4855/4855-720.mp4",
+      "sha256": "011209fbf780baa5ae05e9ea020c70bdb4de1580f04d3d6bcb4aa74da205d935",
+      "license": "Mixkit Stock Video Free License",
+      "licenseUrl": "https://mixkit.co/license/#videoFree",
+      "termsUrl": "https://mixkit.co/terms/",
+      "evidence": "Official item page explicitly labels this clip for commercial and personal projects; official license modal was opened and captured during this task.",
+      "use": "Edited alpha silhouettes embedded in the portfolio crowd scene. Raw video, face pixels, clothing logos and audio are not shipped.",
+      "identityReview": "The output retains body and hair outlines. No face detail remains. A separate model-release receipt was not provided by the item page.",
+      "provenance": {
+        "everyday": "Segmented live-action performer, root motion calibrated from ankle landmarks.",
+        "coat": "Same captured gait plus a code-authored wider coat; shorter display height.",
+        "backpack": "Same captured gait plus a code-authored backpack."
+      },
+      "excluded": [
+        {
+          "item": "Mixkit #23410",
+          "reason": "Free resolution is restricted to personal use; not downloaded or used."
+        },
+        {
+          "item": "Mixkit #35419",
+          "reason": "Free resolution is restricted to personal use; not downloaded or used."
+        },
+        {
+          "item": "Pixabay #150846",
+          "reason": "Inspected candidate, not included in this prototype. Its production provenance was not established as a live-action capture."
+        }
+      ]
+    },
+    {
+      "item": "4888",
+      "title": "Young bearded man walking down the street",
+      "creator": "stockyana",
+      "page": "https://mixkit.co/free-stock-video/young-bearded-man-walking-down-the-street-4888/",
+      "download": "https://assets.mixkit.co/videos/4888/4888-720.mp4",
+      "sha256": "8d679ec6e9f615c4a5b3866990a61eecfc1e1100c3e64fe08f1a5cbfa0311a20",
+      "license": "Mixkit Stock Video Free License",
+      "licenseUrl": "https://mixkit.co/license/#videoFree",
+      "evidence": "Official item page and current license read. Mixkit item explicitly permits commercial/personal use; Pexels item links its Free license. No endorsement or standalone stock redistribution."
+    },
+    {
+      "item": "5995594",
+      "title": "Woman Walking on Pavement",
+      "creator": "Ono Kosuki",
+      "page": "https://www.pexels.com/video/woman-walking-on-pavement-5995594/",
+      "download": "https://videos.pexels.com/video-files/5995594/5995594-uhd_1440_2560_24fps.mp4",
+      "sha256": "5e7d8a039ece4a0b5e1caa43bea44eb81924bc04ed5fa10d85ab5c348c241436",
+      "license": "Pexels License",
+      "licenseUrl": "https://www.pexels.com/license/",
+      "evidence": "Official item page and current license read. Mixkit item explicitly permits commercial/personal use; Pexels item links its Free license. No endorsement or standalone stock redistribution."
+    },
+    {
+      "item": "7706276",
+      "title": "A Delivery Woman Using Her Phone while Walking",
+      "creator": "MART PRODUCTION",
+      "page": "https://www.pexels.com/video/a-delivery-woman-using-her-phone-while-walking-7706276/",
+      "download": "https://videos.pexels.com/video-files/7706276/7706276-uhd_1440_2732_25fps.mp4",
+      "sha256": "d8a2175588f49a43cc96d3c40bba236327967d2d54c33a9c931f89aa874bba4a",
+      "license": "Pexels License",
+      "licenseUrl": "https://www.pexels.com/license/",
+      "evidence": "Official item page and current license read. Mixkit item explicitly permits commercial/personal use; Pexels item links its Free license. No endorsement or standalone stock redistribution."
+    }
+  ],
+  "processing": "Offline macOS Vision foreground instance masks on reviewed source crops. Lower-body envelope excludes a parked bicycle from the courier. Registration uses upper-body masks and a five-frame median. New captures use local floor optical flow; business and courier use four-sample alpha loop closure. Browser renders static atlases only, with no video or Vision model."
+}

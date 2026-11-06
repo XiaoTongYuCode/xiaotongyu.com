@@ -15,36 +15,64 @@ import {
 import { DigitalRain } from "./DigitalRain";
 import { drawWalker, WALKER_VARIANTS } from "./WalkerRig";
 import { PointerTracking, type CrowdPointer } from "./PointerTracking";
+import { WALKER_ATLAS, WALKER_BLURS, BAKED_BLUR_SCALE, type WalkerAtlasSource } from "./walkerAtlas";
 
 export type CrowdProfile = { name: string; caption: string; url: string; visitLabel: string };
 type TrackingElement = HTMLAnchorElement | null;
-const FRAME_COUNT = 48;
-const TILE_WIDTH = 88;
-const TILE_HEIGHT = 140;
-const BLURS = [2.2, 3.6, 5.8, 9];
+const { tileWidth: TILE_WIDTH, tileHeight: TILE_HEIGHT, columns: COLUMNS } = WALKER_ATLAS;
+const BLURS = WALKER_BLURS;
 const TAU = Math.PI * 2;
 
-function createAtlases() {
-  return Array.from({ length: WALKER_VARIANTS }, (_, variant) => {
+function createAtlases(source: WalkerAtlasSource | null, frameCount: number) {
+  const rows = Math.ceil(frameCount / COLUMNS);
+  return Array.from({ length: source ? source.images.length : WALKER_VARIANTS }, (_, variant) => {
+    if (source?.preblurred) {
+      const atlas = document.createElement("canvas");
+      atlas.width = TILE_WIDTH * COLUMNS;
+      atlas.height = TILE_HEIGHT * rows * BLURS.length;
+      const ctx = atlas.getContext("2d");
+      if (!ctx) throw new Error("Canvas is unavailable");
+      BLURS.forEach((_, bank) => {
+        for (let frame = 0; frame < frameCount; frame++) {
+          const captured = Math.floor(frame / frameCount * WALKER_ATLAS.frameCount);
+          ctx.drawImage(source.images[variant],
+            captured % COLUMNS * TILE_WIDTH * BAKED_BLUR_SCALE,
+            (bank * WALKER_ATLAS.frameCount / COLUMNS + Math.floor(captured / COLUMNS)) * TILE_HEIGHT * BAKED_BLUR_SCALE,
+            TILE_WIDTH * BAKED_BLUR_SCALE, TILE_HEIGHT * BAKED_BLUR_SCALE,
+            frame % COLUMNS * TILE_WIDTH, (bank * rows + Math.floor(frame / COLUMNS)) * TILE_HEIGHT,
+            TILE_WIDTH, TILE_HEIGHT);
+        }
+      });
+      return atlas;
+    }
     const sharp = document.createElement("canvas");
-    sharp.width = TILE_WIDTH * FRAME_COUNT;
-    sharp.height = TILE_HEIGHT;
+    sharp.width = TILE_WIDTH * COLUMNS;
+    sharp.height = TILE_HEIGHT * rows;
     const sharpContext = sharp.getContext("2d");
     if (!sharpContext) throw new Error("Canvas is unavailable");
-    for (let frame = 0; frame < FRAME_COUNT; frame++) {
+    for (let frame = 0; frame < frameCount; frame++) {
       sharpContext.save();
-      sharpContext.translate(frame * TILE_WIDTH, 0);
-      drawWalker(sharpContext, (frame / FRAME_COUNT) * TAU, variant);
+      const x = frame % COLUMNS * TILE_WIDTH;
+      const y = Math.floor(frame / COLUMNS) * TILE_HEIGHT;
+      if (source) {
+        const capturedFrame = Math.floor(frame / frameCount * WALKER_ATLAS.frameCount);
+        sharpContext.drawImage(source.images[variant],
+          capturedFrame % COLUMNS * TILE_WIDTH, Math.floor(capturedFrame / COLUMNS) * TILE_HEIGHT,
+          TILE_WIDTH, TILE_HEIGHT, x, y, TILE_WIDTH, TILE_HEIGHT);
+      } else {
+        sharpContext.translate(x, y);
+        drawWalker(sharpContext, (frame / frameCount) * TAU, variant);
+      }
       sharpContext.restore();
     }
     const atlas = document.createElement("canvas");
     atlas.width = sharp.width;
-    atlas.height = TILE_HEIGHT * BLURS.length;
+    atlas.height = sharp.height * BLURS.length;
     const ctx = atlas.getContext("2d");
     if (!ctx) throw new Error("Canvas is unavailable");
     BLURS.forEach((blur, index) => {
       ctx.filter = `blur(${blur}px)`;
-      ctx.drawImage(sharp, 0, index * TILE_HEIGHT);
+      ctx.drawImage(sharp, 0, index * sharp.height);
     });
     return atlas;
   });
@@ -62,6 +90,9 @@ type LabelBinding = {
 export class CrowdRenderer {
   private context: CanvasRenderingContext2D;
   private atlases: HTMLCanvasElement[];
+  private atlasFrameCount: number;
+  private atlasRows: number;
+  private captured: boolean;
   private heatmaps: HTMLCanvasElement[];
   private rain: DigitalRain;
   private highlightSurface: HTMLCanvasElement;
@@ -89,18 +120,28 @@ export class CrowdRenderer {
     private canvas: HTMLCanvasElement,
     labels: TrackingElement[],
     private profiles: CrowdProfile[],
+    source: WalkerAtlasSource | null = null,
   ) {
     const ctx = canvas.getContext("2d", { alpha: false });
     if (!ctx) throw new Error("Canvas is unavailable");
     this.context = ctx;
-    this.atlases = createAtlases();
+    this.captured = source !== null;
+    // Each dimension stays below 4096px. A phone uses half the pose samples.
+    this.atlasFrameCount = window.matchMedia("(max-width: 699px)").matches ? 24 : WALKER_ATLAS.frameCount;
+    this.atlasRows = Math.ceil(this.atlasFrameCount / COLUMNS);
+    this.atlases = createAtlases(source, this.atlasFrameCount);
+    canvas.dataset.walkerSource = this.captured ? "video-derived" : "procedural";
+    canvas.dataset.walkerBlur = source?.preblurred ? "baked" : "filter" in ctx ? "canvas-filter" : "unavailable";
+    canvas.dataset.walkerFrames = String(this.atlasFrameCount);
+    canvas.dataset.walkerVariants = String(this.atlases.length);
+    canvas.dataset.walkerAtlasBytes = String(this.atlases.reduce((sum, atlas) => sum + atlas.width * atlas.height * 4, 0));
     this.heatmaps = this.createHeatmaps();
     this.rain = new DigitalRain();
     this.highlightSurface = document.createElement("canvas");
     this.highlightSurface.width = 96;
     this.highlightSurface.height = 224;
     this.highlightContext = this.highlightSurface.getContext("2d")!;
-    this.people = createCrowd(profiles.length, MAX_CROWD_COUNT);
+    this.people = createCrowd(profiles.length, MAX_CROWD_COUNT, source?.cast);
     // Keep the tracking cast and its timeline stable when more background
     // walkers enter on a wider canvas. All walkers retain their pose history.
     this.timeline = new CrowdTimeline(this.people.slice(0, BASE_CROWD_COUNT), new CrowdMotion(this.people));
@@ -155,6 +196,7 @@ export class CrowdRenderer {
     this.height = rect.height;
     this.activeCount = crowdCountForSize(this.width, this.height);
     this.timeline.motion.setActiveCount(this.activeCount);
+    if (this.captured) this.timeline.motion.setGaitProjection(this.width);
     const ratio = Math.min(window.devicePixelRatio || 1, 2);
     this.canvas.width = Math.round(this.width * ratio);
     this.canvas.height = Math.round(this.height * ratio);
@@ -210,16 +252,17 @@ export class CrowdRenderer {
   }
 
   private sprite(person: ProjectedPerson, blur: number, alpha: number, ctx = this.context) {
-    const size = person.bodyHeight / 99;
-    const gaitFrame = Math.floor((((person.gait % TAU) + TAU) % TAU) / TAU * FRAME_COUNT);
+    const size = person.bodyHeight / WALKER_ATLAS.bodyHeight;
+    const gaitFrame = Math.floor((((person.gait % TAU) + TAU) % TAU) / TAU * this.atlasFrameCount);
     ctx.save();
     ctx.globalAlpha = alpha;
     ctx.translate(person.screenX, person.screenY);
     ctx.scale(person.direction, 1);
     ctx.drawImage(
       this.atlases[person.variant],
-      gaitFrame * TILE_WIDTH, blur * TILE_HEIGHT, TILE_WIDTH, TILE_HEIGHT,
-      -44 * size, -117 * size, TILE_WIDTH * size, TILE_HEIGHT * size,
+      gaitFrame % COLUMNS * TILE_WIDTH, (blur * this.atlasRows + Math.floor(gaitFrame / COLUMNS)) * TILE_HEIGHT,
+      TILE_WIDTH, TILE_HEIGHT,
+      -WALKER_ATLAS.anchorX * size, -WALKER_ATLAS.anchorY * size, TILE_WIDTH * size, TILE_HEIGHT * size,
     );
     ctx.restore();
   }
@@ -302,7 +345,7 @@ export class CrowdRenderer {
 
   private drawTrackingBody(person: ProjectedPerson, layer: TrackingLayer) {
     const ctx = this.context;
-    const width = person.bodyHeight * .44;
+    const width = person.bodyHeight * (this.captured ? .74 : .44);
     const height = person.bodyHeight * 1.05;
     const x = person.screenX - width / 2;
     const y = person.screenY - height;
@@ -384,7 +427,7 @@ export class CrowdRenderer {
     for (const layer of layers) {
       if (layer.opacity <= .001) continue;
       const person = all[layer.personId];
-      const width = person.bodyHeight * .44;
+      const width = person.bodyHeight * (this.captured ? .74 : .44);
       const height = person.bodyHeight * 1.05;
       this.placeLabel(person, layer, person.screenX - width / 2, person.screenY - height, width, height);
     }

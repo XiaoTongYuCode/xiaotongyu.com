@@ -19,7 +19,7 @@ export const zhCN: LocaleMessages = {
       closeMenu: "关闭菜单",
     },
     language: {
-      aria: "切换语言",
+      aria: "Switch to English / 切换为英文",
       current: "中文",
     },
     contact: {

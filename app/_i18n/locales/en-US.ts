@@ -19,7 +19,7 @@ export const enUS: LocaleMessages = {
       closeMenu: "Close menu",
     },
     language: {
-      aria: "Switch language",
+      aria: "Switch to Chinese",
       current: "EN",
     },
     contact: {

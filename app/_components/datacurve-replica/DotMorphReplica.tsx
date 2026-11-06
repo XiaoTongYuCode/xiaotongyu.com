@@ -10,6 +10,7 @@ import { ArrowIcon, LoadingDots } from "./ui";
 import { initRuntime, type Runtime } from "./runtimeController";
 import { useTargetSmoothScroll } from "./useTargetSmoothScroll";
 import { CONTACT_MAILTO, handleContactEmailClick, SiteFooter, SiteNav, useSiteCopy } from "../site/SiteChrome";
+import { localizedPath } from "../../_i18n/routing";
 
 export default function DotMorphReplica() {
   useTargetSmoothScroll();
@@ -19,7 +20,8 @@ export default function DotMorphReplica() {
   const storyStateHandlerRef = useRef<(state: SceneState) => void>(() => undefined);
   const [isLoaded, setIsLoaded] = useState(false);
   const [sceneConfig, setSceneConfig] = useState<SceneConfig>(defaultSceneConfig);
-  const { copy, languageSwitcher } = useSiteCopy();
+  const { copy, languageSwitcher, locale } = useSiteCopy();
+  const workPath = localizedPath("/work", locale);
   const activeScenes = sceneConfig.scenes;
   const localizedScenes = useMemo(
     () =>
@@ -101,7 +103,7 @@ export default function DotMorphReplica() {
                 >
                   {copy.hero.primaryCta}
                 </a>
-                <a href="/work">
+                <a href={workPath}>
                   {copy.hero.secondaryCta}
                   <ArrowIcon size={14} />
                 </a>
@@ -121,7 +123,7 @@ export default function DotMorphReplica() {
               <p key={paragraph}>{paragraph}</p>
             ))}
             <p>
-              {copy.content.closing} <a href="/work">{copy.content.join}</a>
+              {copy.content.closing} <a href={workPath}>{copy.content.join}</a>
             </p>
           </div>
 
