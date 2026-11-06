@@ -64,7 +64,6 @@ export default function HomePage() {
               <a key={project.title} href={project.url} target="_blank" rel="noreferrer">
                 <span className={styles.projectNumber}>0{index + 1}</span>
                 <span>{project.title}<small>{content.projects[project.title]?.description ?? project.kind}</small></span>
-                <span className={styles.projectArrow} aria-hidden="true">↗</span>
               </a>
             ))}
           </div>
