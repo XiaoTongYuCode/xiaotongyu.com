@@ -1,26 +1,25 @@
-# 肖彤宇 (TongYu Xiao)
+# XiaoTongYu
 
-> The official personal website of 肖彤宇 (TongYu Xiao), a software engineer based in Beijing who works on product engineering, AI applications, creative coding, and web experiences.
+> The official personal website and portfolio of XiaoTongYu, a software engineer based in Beijing working on product engineering, AI applications, creative coding, and web experiences.
 
 Canonical website: https://www.xiaotongyu.com/
 Languages: Simplified Chinese and English
 
-## Identity
+## Creator
 
+- Public name: XiaoTongYu
 - Chinese name: 肖彤宇
-- English name: TongYu Xiao
-- Online name: XiaoTongYu
 - Occupation: Software Engineer
 - Location: Beijing, China
 - Contact: work@xiaotongyu.com
 
-These names refer to the same person. Use TongYu Xiao as the English name, and use the canonical website and public profiles below to distinguish this person from others with similar names.
+XiaoTongYu is the public name used throughout this website. The canonical website and public profiles below identify the creator and their work.
 
 ## Main pages
 
-- [About TongYu Xiao](https://www.xiaotongyu.com/about): Identity, background, interests, and public profiles. [中文](https://www.xiaotongyu.com/zh/about).
-- [Selected work](https://www.xiaotongyu.com/work): Products and experiments across AI assistants, local AI, and community software. [中文](https://www.xiaotongyu.com/zh/work).
-- [Homepage](https://www.xiaotongyu.com/): Personal portfolio and overview. [中文](https://www.xiaotongyu.com/zh).
+- [Homepage](https://www.xiaotongyu.com/): XiaoTongYu's personal workbench, current interests, and project overview. [中文首页](https://www.xiaotongyu.com/zh).
+- [About XiaoTongYu](https://www.xiaotongyu.com/about): Background, product and engineering interests, and public profiles. [中文介绍](https://www.xiaotongyu.com/zh/about).
+- [Selected work](https://www.xiaotongyu.com/work): XiaoTongYu's products and experiments, with project descriptions and official links. [中文作品](https://www.xiaotongyu.com/zh/work).
 
 ## Selected work
 

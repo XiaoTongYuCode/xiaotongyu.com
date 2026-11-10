@@ -1,6 +1,7 @@
 "use client";
 
 import { SiteFooter, SiteNav, useSiteCopy } from "../site/SiteChrome";
+import { DISPLAY_NAME, GITHUB_URL } from "../site/identity";
 import ContactButton from "./ContactButton";
 import CrowdScene from "./CrowdScene";
 import DeskPerson from "./DeskPerson";
@@ -38,10 +39,10 @@ export default function HomePage() {
                 />
                 <a
                   className={styles.githubButton}
-                  href="https://github.com/XiaoTongYuCode"
+                  href={GITHUB_URL}
                   target="_blank"
                   rel="noreferrer"
-                  aria-label={isChinese ? "访问 TongYu Xiao 的 GitHub（新窗口）" : "TongYu Xiao on GitHub (opens in a new tab)"}
+                  aria-label={isChinese ? `访问 ${DISPLAY_NAME} 的 GitHub（新窗口）` : `${DISPLAY_NAME} on GitHub (opens in a new tab)`}
                   title="GitHub"
                 >
                   <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">

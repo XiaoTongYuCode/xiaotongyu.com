@@ -165,7 +165,7 @@ export function SiteFooter({ copy }: SiteFooterProps) {
       <a href={sitePath("/work")}>{copy.nav.work}</a>
       <a href={sitePath("/about")}>{copy.nav.about}</a>
       <a href={GITHUB_URL} target="_blank" rel="noreferrer">GitHub</a>
-      <a href={X_URL} target="_blank" rel="noreferrer" aria-label="TongYu Xiao on X (@tongyu_xiao)">X</a>
+      <a href={X_URL} target="_blank" rel="noreferrer" aria-label={`${DISPLAY_NAME} on X (@tongyu_xiao)`}>X</a>
       <a href={CONTACT_MAILTO} onClick={(event) => handleContactEmailClick(event, copy.contact.emailCopied, copy.contact.emailCopyFailed)}>
         {CONTACT_EMAIL}
       </a>

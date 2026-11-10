@@ -14,11 +14,11 @@ export const HOME_COPY: Record<Locale, HomePageCopy> = {
   "zh-CN": {
     meta: {
       title: `${DISPLAY_NAME} — 产品与代码`,
-      description: "这里是肖彤宇（TongYu Xiao）的个人工作台。写代码，做产品，记录关于 AI、人与日常生活的尝试。",
+      description: `这里是 ${DISPLAY_NAME} 的个人工作台。写代码，做产品，记录关于 AI、人与日常生活的尝试。`,
     },
     hero: {
       title: ["有些想法，", "值得动手做出来。"],
-      intro: "我是肖彤宇，一个在北京写代码、做产品的人。这里放着我的作品，也留着一些好奇心：AI、人与人的连接，还有日常里的小事。",
+      intro: `我是 ${DISPLAY_NAME}，一个在北京写代码、做产品的人。这里放着我的作品，也留着一些好奇心：AI、人与人的连接，还有日常里的小事。`,
       work: "看看我在做什么",
       contact: "打个招呼",
     },
@@ -39,12 +39,12 @@ export const HOME_COPY: Record<Locale, HomePageCopy> = {
   },
   "en-US": {
     meta: {
-      title: `${DISPLAY_NAME} (肖彤宇) — Products & code`,
-      description: "TongYu Xiao's (肖彤宇) personal workbench: code, products, and experiments around AI, human connection, and everyday life.",
+      title: `${DISPLAY_NAME} — Products & code`,
+      description: `${DISPLAY_NAME}'s personal workbench: code, products, and experiments around AI, human connection, and everyday life.`,
     },
     hero: {
       title: ["Some ideas are worth", "seeing through."],
-      intro: "I'm TongYu Xiao. I write code and make things in Beijing. This is a home for my work and a few ongoing interests: AI, human connection, and the small things in everyday life.",
+      intro: `I'm ${DISPLAY_NAME}. I write code and make things in Beijing. This is a home for my work and a few ongoing interests: AI, human connection, and the small things in everyday life.`,
       work: "See what I'm making",
       contact: "Say hello",
     },

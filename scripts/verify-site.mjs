@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 const base = process.argv[2] ?? "http://localhost:3107";
 const canonicalOrigin = "https://www.xiaotongyu.com";
 const paths = ["/", "/about", "/work", "/zh", "/zh/about", "/zh/work"];
-const headings = ["Some ideas are worth", "I’m TongYu Xiao.", "Selected work", "有些想法，", "我是肖彤宇。", "精选作品"];
+const headings = ["Some ideas are worth", "I’m XiaoTongYu.", "Selected work", "有些想法，", "我是 XiaoTongYu。", "精选作品"];
 const results = [];
 
 for (const [index, path] of paths.entries()) {
@@ -27,7 +27,8 @@ for (const [index, path] of paths.entries()) {
   assert.ok(html.includes('href="https://x.com/tongyu_xiao"'));
   assert.ok(html.includes(`href="${chinese ? `${englishPath}?lang=en` : chinesePath}" hrefLang="${chinese ? "en-US" : "zh-CN"}"`));
   const schemas = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map((match) => JSON.parse(match[1]));
-  assert.ok(schemas.some((schema) => schema["@graph"]?.some((node) => node["@type"] === "Person" && node.alternateName.includes("TongYu Xiao"))));
+  assert.ok(schemas.some((schema) => schema["@graph"]?.some((node) => node["@type"] === "Person" && node.name === "XiaoTongYu")));
+  assert.ok(schemas.some((schema) => schema["@graph"]?.some((node) => node["@type"] === "WebSite" && node.name === "XiaoTongYu")));
   if (path.endsWith("/about")) assert.ok(schemas.some((schema) => schema["@type"] === "ProfilePage" && schema.inLanguage === (chinese ? "zh-CN" : "en-US")));
   results.push({ path, status: response.status, language: chinese ? "zh-CN" : "en", h1, canonical: canonical[0] });
 }
@@ -42,7 +43,8 @@ assert.match(robots, /Allow: \//);
 assert.ok(robots.includes(`${canonicalOrigin}/sitemap.xml`));
 assert.doesNotMatch(robots, /Disallow: \/\s*$/m);
 const llms = await (await fetch(`${base}/llms.txt`)).text();
-assert.match(llms, /English name: TongYu Xiao/);
+assert.match(llms, /^# XiaoTongYu\n/);
+assert.match(llms, /Public name: XiaoTongYu/);
 assert.doesNotMatch(llms, /Xiaotong Yu|xiaotongyu\.com\/#about/);
 assert.ok(llms.includes(`${canonicalOrigin}/zh/about`));
 assert.ok(llms.includes("https://petspace.xiaotongyu.com/"));

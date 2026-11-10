@@ -30,6 +30,44 @@ def percentile(values, p):
 
 with sync_playwright() as playwright:
     browser = playwright.chromium.launch(headless=True)
+    context = browser.new_context(viewport={"width": 1440, "height": 1000})
+    page = context.new_page()
+    held_atlases = []
+    page.route("**/walkers/*.webp", lambda route: held_atlases.append(route))
+    with page.expect_request("**/walkers/*.webp"):
+        page.goto(args.url + "/zh", wait_until="domcontentloaded")
+    scene = page.locator("[data-crowd-state]")
+    page.wait_for_function("document.querySelector('[data-crowd-state]')?.getAttribute('aria-busy') === 'true'")
+    assert scene.get_by_role("status").is_visible()
+    assert scene.locator("[inert]").count() == 1
+    assert page.locator("canvas").evaluate("c=>getComputedStyle(c).opacity") == "0"
+    loading_box = scene.bounding_box()
+    page.screenshot(path=str(args.out / "crowd-loading.png"))
+    for route in held_atlases:
+        route.continue_()
+    page.unroute("**/walkers/*.webp")
+    page.wait_for_function("""() => {
+      const c = document.querySelector('canvas'), style = c && getComputedStyle(c);
+      return document.querySelector('[data-crowd-state]')?.dataset.crowdState === 'revealing'
+        && Number(style.opacity) > .1 && Number(style.opacity) < .9 && parseFloat(style.filter.slice(5)) > 0;
+    }""")
+    page.screenshot(path=str(args.out / "crowd-revealing.png"))
+    page.wait_for_function("document.querySelector('[data-crowd-state]')?.dataset.crowdState === 'ready'")
+    assert not scene.get_by_role("status").count()
+    assert scene.locator("[inert]").count() == 0
+    assert scene.bounding_box() == loading_box
+    assert page.locator("canvas").evaluate("c=>getComputedStyle(c).filter") == "none"
+    page.screenshot(path=str(args.out / "crowd-ready.png"))
+    results.append({"name": "crowd-loading-reveal", "waitsForAssets": True, "blurAndFade": True, "stableLayout": True})
+    page.reload(wait_until="domcontentloaded")
+    page.wait_for_function("document.querySelector('[data-crowd-state]')?.dataset.crowdState === 'revealing'")
+    page.emulate_media(reduced_motion="reduce")
+    page.wait_for_function("document.querySelector('[data-crowd-state]')?.dataset.crowdState === 'ready'")
+    assert page.locator("canvas").evaluate("c=>getComputedStyle(c).animationName") == "none"
+    assert scene.locator("[inert]").count() == 0
+    results.append({"name": "reduced-motion-during-reveal", "entranceSkipped": True, "trackingAvailable": True})
+    context.close()
+
     for name, width, height, mobile, cpu, original in [
         ("desktop", 1440, 1000, False, 1, False),
         ("desktop-original", 1440, 1000, False, 1, True),
@@ -88,6 +126,8 @@ with sync_playwright() as playwright:
     page = context.new_page()
     page.goto(args.url + "/zh", wait_until="networkidle")
     page.wait_for_function("document.querySelector('canvas')?.dataset.walkerSource === 'video-derived'")
+    assert page.locator("[data-crowd-state]").get_attribute("data-crowd-state") == "ready"
+    assert page.locator("canvas").evaluate("c=>getComputedStyle(c).animationName") == "none"
     first = page.locator("canvas").evaluate("c=>c.toDataURL()")
     page.wait_for_timeout(300)
     assert first == page.locator("canvas").evaluate("c=>c.toDataURL()")
@@ -99,6 +139,7 @@ with sync_playwright() as playwright:
     page.route("**/walkers/*.webp", lambda route: route.abort())
     page.goto(args.url + "/zh", wait_until="networkidle")
     page.wait_for_function("document.querySelector('canvas')?.dataset.walkerSource === 'procedural'")
+    page.wait_for_function("document.querySelector('[data-crowd-state]')?.dataset.crowdState === 'ready'")
     assert page.locator("a[data-person][aria-hidden='false']").count() > 0
     results.append({"name": "failed-atlas", "proceduralFallback": True})
     context.close()
@@ -133,6 +174,7 @@ with sync_playwright() as playwright:
     first = page.locator("canvas").evaluate("c=>c.toDataURL()")
     page.wait_for_timeout(250)
     assert first != page.locator("canvas").evaluate("c=>c.toDataURL()")
+    page.wait_for_function("document.querySelector('[data-crowd-state]')?.dataset.crowdState === 'ready'")
     assert not errors
     page.screenshot(path=str(args.out / "webkit-phone.png"), full_page=True)
     results.append({"name": "webkit-phone", "browser": webkit.version, "animatedCanvas": True, "blur": page.locator("canvas").get_attribute("data-walker-blur"), "errors": errors})

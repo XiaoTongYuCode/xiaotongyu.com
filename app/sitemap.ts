@@ -3,7 +3,7 @@ import type { MetadataRoute } from "next";
 import { SITE_URL } from "./_seo/site";
 import { SITE_PATHS, localizedPath } from "./_i18n/routing";
 
-const LAST_UPDATED = new Date("2026-11-05T00:00:00+08:00");
+const LAST_UPDATED = new Date("2026-11-10T00:00:00+08:00");
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return SITE_PATHS.flatMap((path) => {

@@ -15,8 +15,21 @@
 .intro { display: flex; flex-direction: column; }
 
 .scene { position: relative; isolation: isolate; width: min(100%, 1400px); margin-inline: auto; flex: 0 0 auto; height: clamp(280px, 30vw, 430px); }
-.canvas { position: absolute; width: 100%; height: 100%; inset: 0; }
-.trackingLayer { position: absolute; inset: 0; z-index: 2; pointer-events: none; overflow: hidden; }
+.canvas { position: absolute; width: 100%; height: 100%; inset: 0; opacity: 0; }
+.trackingLayer { position: absolute; inset: 0; z-index: 2; pointer-events: none; overflow: hidden; opacity: 0; }
+.scene[data-crowd-state="revealing"] .canvas { animation: crowd-arrive 1200ms cubic-bezier(.22, .61, .36, 1) both; }
+.scene[data-crowd-state="revealing"] .trackingLayer { animation: crowd-tracks-arrive 650ms ease-out 240ms both; }
+.scene[data-crowd-state="ready"] .canvas, .scene[data-crowd-state="ready"] .trackingLayer { opacity: 1; }
+.sceneLoader { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; color: #93978e; opacity: 1; visibility: visible; transition: opacity 200ms ease-out, visibility 0s; }
+.scene:not([data-crowd-state="loading"]) .sceneLoader { opacity: 0; visibility: hidden; transition: opacity 200ms ease-out, visibility 0s 200ms; }
+.loaderDots { display: flex; align-items: center; gap: 6px; }
+.loaderDots > span { width: 4px; height: 4px; border-radius: 50%; background: currentColor; animation: crowd-loading 1200ms ease-in-out infinite; }
+.loaderDots > span:nth-child(2) { animation-delay: 140ms; }
+.loaderDots > span:nth-child(3) { animation-delay: 280ms; }
+.scene:not([data-crowd-state="loading"]) .loaderDots > span { animation: none; }
+@keyframes crowd-loading { 0%, 100% { opacity: .25; } 50% { opacity: .85; } }
+@keyframes crowd-arrive { from { opacity: 0; filter: blur(14px); } to { opacity: 1; filter: blur(0); } }
+@keyframes crowd-tracks-arrive { from { opacity: 0; } to { opacity: 1; } }
 .track { position: absolute; top: 0; left: 0; opacity: 0; visibility: hidden; pointer-events: none; will-change: transform, opacity; text-decoration: none; }
 .track::after { content: ""; position: absolute; inset: -18px -14px -20px; }
 .trackName { position: absolute; left: -1px; bottom: calc(100% - 1px); white-space: nowrap; display: block; font-size: 10px; font-weight: 500; letter-spacing: .65px; line-height: 18px; padding: 0 6px; color: white; background: var(--track-color); }
@@ -113,5 +126,7 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .page *, .page *::before, .page *::after { transition: none !important; scroll-behavior: auto; }
+  .loaderDots > span, .scene[data-crowd-state="revealing"] .canvas, .scene[data-crowd-state="revealing"] .trackingLayer { animation: none !important; }
+  .scene[data-crowd-state="revealing"] .canvas, .scene[data-crowd-state="revealing"] .trackingLayer { opacity: 1; }
   .deskScene * { animation: none !important; }
 }
